@@ -1,7 +1,8 @@
-import java.util.function.Function;
-
 public sealed interface Type
-    permits Type.Bool, Type.Integer, Type.Lambda, Type.List, Type.Symbol {
+    permits Type.Bool, Type.Integer, Type.Lambda, Type.List, Type.Symbol, Type.Unit {
+
+    record Unit() implements Type {
+    }
 
     record Integer(java.lang.Integer val) implements Type {
     }
@@ -15,5 +16,5 @@ public sealed interface Type
     record List(java.util.List<Type> val) implements Type {
     }
 
-    record Lambda(Function<Type, Type> val) implements Type {}
+    record Lambda(java.util.List<String> params, java.util.List<Type> body) implements Type {}
 }
