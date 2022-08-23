@@ -1,12 +1,19 @@
 import java.util.Iterator;
 
 public sealed interface Type
-    permits Type.Bool, Type.Integer, Type.Lambda, Type.List, Type.Symbol, Type.Unit {
+    permits Type.BiOperator, Type.Bool, Type.Integer, Type.Lambda, Type.List, Type.Symbol, Type.Unit {
 
     record Unit() implements Type {
         @Override
         public String toString() {
             return "Unit";
+        }
+    }
+
+    record BiOperator(String val) implements Type {
+        @Override
+        public String toString() {
+            return "BiOperator " + val;
         }
     }
 

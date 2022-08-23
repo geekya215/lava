@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Eval {
-    public static Type evalBinaryOp(List<Type> list, Env env) throws EvalException {
+    public static Type evalBiOperator(List<Type> list, Env env) throws EvalException {
         if (list.size() != 3) {
             throw new EvalException("Invalid number of arguments for infix operator");
         }
@@ -14,27 +14,97 @@ public class Eval {
         var left = evalType(list.get(1), env);
         var right = evalType(list.get(2), env);
 
-        var left_val = switch (left) {
-            case Type.Integer i -> i.val();
-            default -> throw new EvalException("Left operand must be an integer " + left);
-        };
-
-        var right_val = switch (right) {
-            case Type.Integer i -> i.val();
-            default -> throw new EvalException("Right operand must be an integer " + right);
-        };
-
         return switch (op) {
-            case Type.Symbol sym -> switch (sym.val()) {
-                case "+" -> new Type.Integer(left_val + right_val);
-                case "-" -> new Type.Integer(left_val - right_val);
-                case "*" -> new Type.Integer(left_val * right_val);
-                case "/" -> new Type.Integer(left_val / right_val);
-                case "<" -> new Type.Bool(left_val < right_val);
-                case ">" -> new Type.Bool(left_val > right_val);
-                case "=" -> new Type.Bool(left_val == right_val);
-                case "!=" -> new Type.Bool(left_val != right_val);
-                default -> throw new EvalException("Invalid infix operator: " + sym);
+            case Type.BiOperator bop -> switch (bop.val()) {
+                case "+" -> {
+                    if (left instanceof Type.Integer l && right instanceof Type.Integer r) {
+                        yield new Type.Integer(l.val() + r.val());
+                    } else {
+                        throw new EvalException("Invalid types for + operator " + left + right);
+                    }
+                }
+                case "-" -> {
+                    if (left instanceof Type.Integer l && right instanceof Type.Integer r) {
+                        yield new Type.Integer(l.val() - r.val());
+                    } else {
+                        throw new EvalException("Invalid types for - operator " + left + right);
+                    }
+                }
+                case "*" -> {
+                    if (left instanceof Type.Integer l && right instanceof Type.Integer r) {
+                        yield new Type.Integer(l.val() * r.val());
+                    } else {
+                        throw new EvalException("Invalid types for * operator " + left + right);
+                    }
+                }
+                case "/" -> {
+                    if (left instanceof Type.Integer l && right instanceof Type.Integer r) {
+                        yield new Type.Integer(l.val() / r.val());
+                    } else {
+                        throw new EvalException("Invalid types for / operator " + left + right);
+                    }
+                }
+                case "<" -> {
+                    if (left instanceof Type.Integer l && right instanceof Type.Integer r) {
+                        yield new Type.Bool(l.val() < r.val());
+                    } else {
+                        throw new EvalException("Invalid types for < operator " + left + right);
+                    }
+                }
+                case ">" -> {
+                    if (left instanceof Type.Integer l && right instanceof Type.Integer r) {
+                        yield new Type.Bool(l.val() > r.val());
+                    } else {
+                        throw new EvalException("Invalid types for > operator " + left + right);
+                    }
+                }
+                case "<=" -> {
+                    if (left instanceof Type.Integer l && right instanceof Type.Integer r) {
+                        yield new Type.Bool(l.val() <= r.val());
+                    } else {
+                        throw new EvalException("Invalid types for <= operator " + left + right);
+                    }
+                }
+                case ">=" -> {
+                    if (left instanceof Type.Integer l && right instanceof Type.Integer r) {
+                        yield new Type.Bool(l.val() >= r.val());
+                    } else {
+                        throw new EvalException("Invalid types for >= operator " + left + right);
+                    }
+                }
+                case "=" -> {
+                    if (left instanceof Type.Integer l && right instanceof Type.Integer r) {
+                        yield new Type.Bool(l.val() == r.val());
+                    } else if (left instanceof Type.Bool l && right instanceof Type.Bool r) {
+                        yield new Type.Bool(l.val() == r.val());
+                    } else {
+                        throw new EvalException("Invalid types for = operator " + left + right);
+                    }
+                }
+                case "!=" -> {
+                    if (left instanceof Type.Integer l && right instanceof Type.Integer r) {
+                        yield new Type.Bool(l.val() != r.val());
+                    } else if (left instanceof Type.Bool l && right instanceof Type.Bool r) {
+                        yield new Type.Bool(l.val() != r.val());
+                    } else {
+                        throw new EvalException("Invalid types for != operator " + left + right);
+                    }
+                }
+                case "and" -> {
+                    if (left instanceof Type.Bool l && right instanceof Type.Bool r) {
+                        yield new Type.Bool(l.val() && r.val());
+                    } else {
+                        throw new EvalException("Invalid types for and operator " + left + right);
+                    }
+                }
+                case "or" -> {
+                    if (left instanceof Type.Bool l && right instanceof Type.Bool r) {
+                        yield new Type.Bool(l.val() || r.val());
+                    } else {
+                        throw new EvalException("Invalid types for or operator " + left + right);
+                    }
+                }
+                default -> throw new EvalException("Invalid infix operator: " + bop);
             };
             default -> throw new EvalException("Operator must be a symbol");
         };
@@ -109,6 +179,8 @@ public class Eval {
                 var params = lamb.params();
                 var body = lamb.body();
                 for (int i = 0; i < params.size(); i++) {
+                    // Fix me
+                    // e.g call (a, b) -> a + b without params with cause IndexOutOfBoundsException
                     var val = evalType(list.get(i + 1), env);
                     new_env.set(params.get(i), val);
                 }
@@ -130,8 +202,8 @@ public class Eval {
     public static Type evalList(List<Type> list, Env env) throws EvalException {
         var head = list.get(0);
         return switch (head) {
+            case Type.BiOperator op -> evalBiOperator(list, env);
             case Type.Symbol sym -> switch (sym.val()) {
-                case "+", "-", "*", "/", "<", ">", "=", "!=" -> evalBinaryOp(list, env);
                 case "define" -> evalDefine(list, env);
                 case "if" -> evalIf(list, env);
                 case "lambda" -> evalFunctionDefinition(list);
@@ -160,6 +232,7 @@ public class Eval {
             case Type.Symbol sym -> evalSymbol(sym.val(), env);
             case Type.Lambda __ -> new Type.Unit();
             case Type.Unit u -> u;
+            case Type.BiOperator bop -> bop;
         };
     }
 

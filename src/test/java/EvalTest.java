@@ -8,10 +8,22 @@ import java.util.ArrayList;
 
 public class EvalTest {
     @Test
-    void testAdd() throws EmptyException, EvalException, ParseException {
+    void testArithmetic() throws EmptyException, EvalException, ParseException {
         Assertions.assertEquals(
             Eval.eval("(+ 1 2)", new Env()),
             new Type.Integer(3)
+        );
+        Assertions.assertEquals(
+            Eval.eval("(- 1 2)", new Env()),
+            new Type.Integer(-1)
+        );
+        Assertions.assertEquals(
+            Eval.eval("(* 1 2)", new Env()),
+            new Type.Integer(2)
+        );
+        Assertions.assertEquals(
+            Eval.eval("(/ 1 2)", new Env()),
+            new Type.Integer(0)
         );
     }
 
@@ -19,6 +31,47 @@ public class EvalTest {
     void testCompare() throws EmptyException, EvalException, ParseException {
         Assertions.assertEquals(
             Eval.eval("(> 3 2)", new Env()),
+            new Type.Bool(true)
+        );
+        Assertions.assertEquals(
+            Eval.eval("(< 3 2)", new Env()),
+            new Type.Bool(false)
+        );
+        Assertions.assertEquals(
+            Eval.eval("(<= 3 2)", new Env()),
+            new Type.Bool(false)
+        );
+        Assertions.assertEquals(
+            Eval.eval("(>= 3 2)", new Env()),
+            new Type.Bool(true)
+        );
+        Assertions.assertEquals(
+            Eval.eval("(<= 2 2)", new Env()),
+            new Type.Bool(true)
+        );
+        Assertions.assertEquals(
+            Eval.eval("(>= 3 3)", new Env()),
+            new Type.Bool(true)
+        );
+        Assertions.assertEquals(
+            Eval.eval("(= 3 2)", new Env()),
+            new Type.Bool(false)
+        );
+        Assertions.assertEquals(
+            Eval.eval("(!= 3 2)", new Env()),
+            new Type.Bool(true)
+        );
+    }
+
+    @Test
+    void testLogic() throws EmptyException, EvalException, ParseException {
+        Assertions.assertEquals(
+            Eval.eval("(and (= 1 2) (< 2 3))", new Env()),
+            new Type.Bool(false)
+        );
+
+        Assertions.assertEquals(
+            Eval.eval("(or (= 1 2) (< 2 3))", new Env()),
             new Type.Bool(true)
         );
     }

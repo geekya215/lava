@@ -12,7 +12,7 @@ public class ParserTest {
         Assertions.assertEquals(
             Parser.parse(tokens),
             new Type.List(new ArrayList<>() {{
-                add(new Type.Symbol("+"));
+                add(new Type.BiOperator("+"));
                 add(new Type.Integer(1));
                 add(new Type.Integer(2));
             }})
@@ -25,9 +25,9 @@ public class ParserTest {
         Assertions.assertEquals(
             Parser.parse(tokens),
             new Type.List(new ArrayList<>() {{
-                add(new Type.Symbol("+"));
+                add(new Type.BiOperator("+"));
                 add(new Type.List(new ArrayList<>() {{
-                    add(new Type.Symbol("*"));
+                    add(new Type.BiOperator("*"));
                     add(new Type.Integer(2));
                     add(new Type.Integer(3));
                 }}));
@@ -59,10 +59,10 @@ public class ParserTest {
                     add(new Type.Integer(314));
                 }}));
                 add(new Type.List(new ArrayList<>() {{
-                    add(new Type.Symbol("*"));
+                    add(new Type.BiOperator("*"));
                     add(new Type.Symbol("pi"));
                     add(new Type.List(new ArrayList<>() {{
-                        add(new Type.Symbol("*"));
+                        add(new Type.BiOperator("*"));
                         add(new Type.Symbol("r"));
                         add(new Type.Symbol("r"));
                     }}));

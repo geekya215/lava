@@ -2,7 +2,6 @@ import exception.EmptyException;
 import exception.ParseException;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 public class Parser {
@@ -22,7 +21,15 @@ public class Parser {
             var token = tokens.remove(0);
             switch (token) {
                 case Token.Integer i -> res.add(new Type.Integer(i.val()));
-                case Token.Symbol s -> res.add(new Type.Symbol(s.val()));
+                case Token.Symbol sym -> {
+                    var s = sym.val();
+                    switch (s) {
+                        case "+", "-", "*", "/",
+                            "<", ">", "=", "!=", "<=", ">=",
+                            "and", "or" -> res.add(new Type.BiOperator(s));
+                        default -> res.add(new Type.Symbol(s));
+                    }
+                }
                 case Token.LeftParenthesis l -> {
                     tokens.add(0, new Token.LeftParenthesis());
                     Type sub = parse(tokens);
