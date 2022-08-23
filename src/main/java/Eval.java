@@ -6,6 +6,36 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Eval {
+    private static Type evalOperator(List<Type> list, Env env) throws EvalException {
+        if (list.size() != 2) {
+            throw new EvalException("Invalid number of arguments for infix operator");
+        }
+
+        var op = list.get(0);
+        var operand = evalType(list.get(1), env);
+
+        return switch (op) {
+            case Type.Operator o -> switch (o.val()) {
+                case "neg" -> {
+                    if (operand instanceof Type.Integer i) {
+                        yield new Type.Integer(-i.val());
+                    } else {
+                        throw new EvalException("Invalid types for neg operator " + operand);
+                    }
+                }
+                case "not" -> {
+                    if (operand instanceof Type.Bool b) {
+                        yield new Type.Bool(!b.val());
+                    } else {
+                        throw new EvalException("Invalid types for not operator " + operand);
+                    }
+                }
+                default -> throw new EvalException("Invalid infix operator: " + o);
+            };
+            default -> throw new EvalException("Operator must be a symbol");
+        };
+    }
+
     public static Type evalBiOperator(List<Type> list, Env env) throws EvalException {
         if (list.size() != 3) {
             throw new EvalException("Invalid number of arguments for infix operator");
@@ -202,7 +232,8 @@ public class Eval {
     public static Type evalList(List<Type> list, Env env) throws EvalException {
         var head = list.get(0);
         return switch (head) {
-            case Type.BiOperator op -> evalBiOperator(list, env);
+            case Type.Operator op -> evalOperator(list, env);
+            case Type.BiOperator bop -> evalBiOperator(list, env);
             case Type.Symbol sym -> switch (sym.val()) {
                 case "define" -> evalDefine(list, env);
                 case "if" -> evalIf(list, env);
@@ -233,6 +264,7 @@ public class Eval {
             case Type.Lambda __ -> new Type.Unit();
             case Type.Unit u -> u;
             case Type.BiOperator bop -> bop;
+            case Type.Operator op -> op;
         };
     }
 

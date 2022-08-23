@@ -27,6 +27,7 @@ public class Parser {
                         case "+", "-", "*", "/",
                             "<", ">", "=", "!=", "<=", ">=",
                             "and", "or" -> res.add(new Type.BiOperator(s));
+                        case "neg", "not" -> res.add(new Type.Operator(s));
                         default -> res.add(new Type.Symbol(s));
                     }
                 }

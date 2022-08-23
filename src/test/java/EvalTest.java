@@ -25,6 +25,14 @@ public class EvalTest {
             Eval.eval("(/ 1 2)", new Env()),
             new Type.Integer(0)
         );
+        Assertions.assertEquals(
+            Eval.eval("(neg 1)", new Env()),
+            new Type.Integer(-1)
+        );
+        Assertions.assertEquals(
+            Eval.eval("(neg -1)", new Env()),
+            new Type.Integer(1)
+        );
     }
 
     @Test
@@ -69,9 +77,12 @@ public class EvalTest {
             Eval.eval("(and (= 1 2) (< 2 3))", new Env()),
             new Type.Bool(false)
         );
-
         Assertions.assertEquals(
             Eval.eval("(or (= 1 2) (< 2 3))", new Env()),
+            new Type.Bool(true)
+        );
+        Assertions.assertEquals(
+            Eval.eval("(not (= 1 2))", new Env()),
             new Type.Bool(true)
         );
     }
