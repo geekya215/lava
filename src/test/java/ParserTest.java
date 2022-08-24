@@ -49,12 +49,12 @@ public class ParserTest {
             Parser.parse(tokens),
             new Type.List(new ArrayList<>() {{
                 add(new Type.List(new ArrayList<>() {{
-                    add(new Type.Symbol("define"));
+                    add(new Type.Keyword("define"));
                     add(new Type.Symbol("r"));
                     add(new Type.Integer(10));
                 }}));
                 add(new Type.List(new ArrayList<>() {{
-                    add(new Type.Symbol("define"));
+                    add(new Type.Keyword("define"));
                     add(new Type.Symbol("pi"));
                     add(new Type.Integer(314));
                 }}));

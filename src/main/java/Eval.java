@@ -296,12 +296,8 @@ public class Eval {
         return switch (head) {
             case Type.UnaryOperator uop -> evalUnaryOperator(list, env);
             case Type.BinaryOperator bop -> evalBinaryOperator(list, env);
-            case Type.Symbol sym -> switch (sym.val()) {
-                case "define" -> evalDefine(list, env);
-                case "if" -> evalIf(list, env);
-                case "lambda" -> evalFunctionDefinition(list);
-                default -> evalFunctionCall(sym.val(), list, env);
-            };
+            case Type.Keyword keyword -> evalKeyword(list, env);
+            case Type.Symbol sym -> evalFunctionCall(sym.val(), list, env);
             default -> {
                 var new_list = new ArrayList<Type>();
                 for (var type : list) {
@@ -317,12 +313,26 @@ public class Eval {
         };
     }
 
+    private static Type evalKeyword(List<Type> list, Env env) throws EvalException {
+        var head = list.get(0);
+        return switch (head) {
+            case Type.Keyword keyword -> switch (keyword.val()) {
+                case "define" -> evalDefine(list, env);
+                case "lambda" -> evalFunctionDefinition(list);
+                case "if" -> evalIf(list, env);
+                default -> throw new EvalException("Unknown keyword: " + keyword.val());
+            };
+            default -> throw new EvalException("Invalid keyword: " + head);
+        };
+    }
+
     public static Type evalType(Type type, Env env) throws EvalException {
         return switch (type) {
             case Type.Integer i -> i;
             case Type.Bool b -> b;
             case Type.List l -> evalList(l.val(), env);
             case Type.Symbol sym -> evalSymbol(sym.val(), env);
+            case Type.Keyword k -> k;
             case Type.Lambda __ -> new Type.Unit();
             case Type.Unit u -> u;
             case Type.UnaryOperator uop -> uop;
