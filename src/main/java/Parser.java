@@ -24,10 +24,10 @@ public class Parser {
                 case Token.Symbol sym -> {
                     var s = sym.val();
                     switch (s) {
+                        case "neg", "not" -> res.add(new Type.UnaryOperator(s));
                         case "+", "-", "*", "/",
                             "<", ">", "=", "!=", "<=", ">=",
-                            "and", "or" -> res.add(new Type.BiOperator(s));
-                        case "neg", "not" -> res.add(new Type.Operator(s));
+                            "and", "or" -> res.add(new Type.BinaryOperator(s));
                         default -> res.add(new Type.Symbol(s));
                     }
                 }

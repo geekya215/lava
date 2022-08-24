@@ -1,105 +1,143 @@
-import exception.EmptyException;
-import exception.EvalException;
-import exception.ParseException;
+import exception.*;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class Eval {
-    private static Type evalOperator(List<Type> list, Env env) throws EvalException {
+    private static Type evalUnaryOperator(List<Type> list, Env env) throws EvalException {
         if (list.size() != 2) {
-            throw new EvalException("Invalid number of arguments for infix operator");
+            throw new UnaryOperatorException("invalid number of arguments for unary operator");
         }
 
         var op = list.get(0);
         var operand = evalType(list.get(1), env);
 
         return switch (op) {
-            case Type.Operator o -> switch (o.val()) {
+            case Type.UnaryOperator uop -> switch (uop.val()) {
                 case "neg" -> {
                     if (operand instanceof Type.Integer i) {
                         yield new Type.Integer(-i.val());
                     } else {
-                        throw new EvalException("Invalid types for neg operator " + operand);
+                        throw new UnaryOperatorException("neg", Type.Integer.class, operand.getClass());
                     }
                 }
                 case "not" -> {
                     if (operand instanceof Type.Bool b) {
                         yield new Type.Bool(!b.val());
                     } else {
-                        throw new EvalException("Invalid types for not operator " + operand);
+                        throw new UnaryOperatorException("not", Type.Bool.class, operand.getClass());
                     }
                 }
-                default -> throw new EvalException("Invalid infix operator: " + o);
+                default -> throw new UnaryOperatorException("invalid unary operator: " + uop);
             };
-            default -> throw new EvalException("Operator must be a symbol");
+            default -> throw new UnaryOperatorException("unary operator must be a symbol");
         };
     }
 
-    public static Type evalBiOperator(List<Type> list, Env env) throws EvalException {
+    public static Type evalBinaryOperator(List<Type> list, Env env) throws EvalException {
         if (list.size() != 3) {
-            throw new EvalException("Invalid number of arguments for infix operator");
+            throw new BinaryOperatorException("invalid number of arguments for binary operator");
         }
         var op = list.get(0);
         var left = evalType(list.get(1), env);
         var right = evalType(list.get(2), env);
 
         return switch (op) {
-            case Type.BiOperator bop -> switch (bop.val()) {
+            case Type.BinaryOperator bop -> switch (bop.val()) {
                 case "+" -> {
                     if (left instanceof Type.Integer l && right instanceof Type.Integer r) {
                         yield new Type.Integer(l.val() + r.val());
                     } else {
-                        throw new EvalException("Invalid types for + operator " + left + right);
+                        throw new BinaryOperatorException(
+                            "+",
+                            Type.Integer.class,
+                            Type.Integer.class,
+                            left.getClass(),
+                            right.getClass());
                     }
                 }
                 case "-" -> {
                     if (left instanceof Type.Integer l && right instanceof Type.Integer r) {
                         yield new Type.Integer(l.val() - r.val());
                     } else {
-                        throw new EvalException("Invalid types for - operator " + left + right);
+                        throw new BinaryOperatorException(
+                            "-",
+                            Type.Integer.class,
+                            Type.Integer.class,
+                            left.getClass(),
+                            right.getClass());
                     }
                 }
                 case "*" -> {
                     if (left instanceof Type.Integer l && right instanceof Type.Integer r) {
                         yield new Type.Integer(l.val() * r.val());
                     } else {
-                        throw new EvalException("Invalid types for * operator " + left + right);
+                        throw new BinaryOperatorException(
+                            "*",
+                            Type.Integer.class,
+                            Type.Integer.class,
+                            left.getClass(),
+                            right.getClass());
                     }
                 }
                 case "/" -> {
                     if (left instanceof Type.Integer l && right instanceof Type.Integer r) {
                         yield new Type.Integer(l.val() / r.val());
                     } else {
-                        throw new EvalException("Invalid types for / operator " + left + right);
+                        throw new BinaryOperatorException(
+                            "/",
+                            Type.Integer.class,
+                            Type.Integer.class,
+                            left.getClass(),
+                            right.getClass());
                     }
                 }
                 case "<" -> {
                     if (left instanceof Type.Integer l && right instanceof Type.Integer r) {
                         yield new Type.Bool(l.val() < r.val());
                     } else {
-                        throw new EvalException("Invalid types for < operator " + left + right);
+                        throw new BinaryOperatorException(
+                            "<",
+                            Type.Integer.class,
+                            Type.Integer.class,
+                            left.getClass(),
+                            right.getClass());
                     }
                 }
                 case ">" -> {
                     if (left instanceof Type.Integer l && right instanceof Type.Integer r) {
                         yield new Type.Bool(l.val() > r.val());
                     } else {
-                        throw new EvalException("Invalid types for > operator " + left + right);
+                        throw new BinaryOperatorException(
+                            ">",
+                            Type.Integer.class,
+                            Type.Integer.class,
+                            left.getClass(),
+                            right.getClass());
                     }
                 }
                 case "<=" -> {
                     if (left instanceof Type.Integer l && right instanceof Type.Integer r) {
                         yield new Type.Bool(l.val() <= r.val());
                     } else {
-                        throw new EvalException("Invalid types for <= operator " + left + right);
+                        throw new BinaryOperatorException(
+                            "<=",
+                            Type.Integer.class,
+                            Type.Integer.class,
+                            left.getClass(),
+                            right.getClass());
                     }
                 }
                 case ">=" -> {
                     if (left instanceof Type.Integer l && right instanceof Type.Integer r) {
                         yield new Type.Bool(l.val() >= r.val());
                     } else {
-                        throw new EvalException("Invalid types for >= operator " + left + right);
+                        throw new BinaryOperatorException(
+                            ">=",
+                            Type.Integer.class,
+                            Type.Integer.class,
+                            left.getClass(),
+                            right.getClass());
                     }
                 }
                 case "=" -> {
@@ -108,7 +146,14 @@ public class Eval {
                     } else if (left instanceof Type.Bool l && right instanceof Type.Bool r) {
                         yield new Type.Bool(l.val() == r.val());
                     } else {
-                        throw new EvalException("Invalid types for = operator " + left + right);
+                        String t = "invalid types for = operator:\n\texpected (= `%s` `%s`) or (= `%s` `%s`), found (= `%s` `%s`)";
+                        throw new BinaryOperatorException(String.format(t,
+                            Type.Integer.class.getSimpleName(),
+                            Type.Integer.class.getSimpleName(),
+                            Type.Bool.class.getSimpleName(),
+                            Type.Bool.class.getSimpleName(),
+                            left.getClass().getSimpleName(),
+                            right.getClass().getSimpleName()));
                     }
                 }
                 case "!=" -> {
@@ -117,26 +162,43 @@ public class Eval {
                     } else if (left instanceof Type.Bool l && right instanceof Type.Bool r) {
                         yield new Type.Bool(l.val() != r.val());
                     } else {
-                        throw new EvalException("Invalid types for != operator " + left + right);
+                        String t = "invalid types for != operator:\n\texpected (!= `%s` `%s`) or (!= `%s` `%s`), found (!= `%s` `%s`)";
+                        throw new BinaryOperatorException(String.format(t,
+                            Type.Integer.class.getSimpleName(),
+                            Type.Integer.class.getSimpleName(),
+                            Type.Bool.class.getSimpleName(),
+                            Type.Bool.class.getSimpleName(),
+                            left.getClass().getSimpleName(),
+                            right.getClass().getSimpleName()));
                     }
                 }
                 case "and" -> {
                     if (left instanceof Type.Bool l && right instanceof Type.Bool r) {
                         yield new Type.Bool(l.val() && r.val());
                     } else {
-                        throw new EvalException("Invalid types for and operator " + left + right);
+                        throw new BinaryOperatorException(
+                            "and",
+                            Type.Bool.class,
+                            Type.Bool.class,
+                            left.getClass(),
+                            right.getClass());
                     }
                 }
                 case "or" -> {
                     if (left instanceof Type.Bool l && right instanceof Type.Bool r) {
                         yield new Type.Bool(l.val() || r.val());
                     } else {
-                        throw new EvalException("Invalid types for or operator " + left + right);
+                        throw new BinaryOperatorException(
+                            "or",
+                            Type.Bool.class,
+                            Type.Bool.class,
+                            left.getClass(),
+                            right.getClass());
                     }
                 }
-                default -> throw new EvalException("Invalid infix operator: " + bop);
+                default -> throw new BinaryOperatorException("Invalid binary operator: " + bop);
             };
-            default -> throw new EvalException("Operator must be a symbol");
+            default -> throw new BinaryOperatorException("binary operator must be a symbol");
         };
     }
 
@@ -232,8 +294,8 @@ public class Eval {
     public static Type evalList(List<Type> list, Env env) throws EvalException {
         var head = list.get(0);
         return switch (head) {
-            case Type.Operator op -> evalOperator(list, env);
-            case Type.BiOperator bop -> evalBiOperator(list, env);
+            case Type.UnaryOperator uop -> evalUnaryOperator(list, env);
+            case Type.BinaryOperator bop -> evalBinaryOperator(list, env);
             case Type.Symbol sym -> switch (sym.val()) {
                 case "define" -> evalDefine(list, env);
                 case "if" -> evalIf(list, env);
@@ -263,8 +325,8 @@ public class Eval {
             case Type.Symbol sym -> evalSymbol(sym.val(), env);
             case Type.Lambda __ -> new Type.Unit();
             case Type.Unit u -> u;
-            case Type.BiOperator bop -> bop;
-            case Type.Operator op -> op;
+            case Type.UnaryOperator uop -> uop;
+            case Type.BinaryOperator bop -> bop;
         };
     }
 

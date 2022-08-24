@@ -1,7 +1,7 @@
 import java.util.Iterator;
 
 public sealed interface Type
-    permits Type.BiOperator, Type.Bool, Type.Integer, Type.Lambda, Type.List, Type.Operator, Type.Symbol, Type.Unit {
+    permits Type.BinaryOperator, Type.Bool, Type.Integer, Type.Lambda, Type.List, Type.Symbol, Type.UnaryOperator, Type.Unit {
 
     record Unit() implements Type {
         @Override
@@ -10,17 +10,17 @@ public sealed interface Type
         }
     }
 
-    record Operator(String val) implements Type {
+    record UnaryOperator(String val) implements Type {
         @Override
         public String toString() {
-            return "Operator " + val;
+            return "UnaryOperator " + val;
         }
     }
 
-    record BiOperator(String val) implements Type {
+    record BinaryOperator(String val) implements Type {
         @Override
         public String toString() {
-            return "BiOperator " + val;
+            return "BinaryOperator " + val;
         }
     }
 
