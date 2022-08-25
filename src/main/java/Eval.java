@@ -269,11 +269,16 @@ public class Eval {
             case Type.Lambda lamb -> {
                 var new_env = Env.extend(env);
                 var params = lamb.params();
+                var args = list.subList(1, list.size());
                 var body = lamb.body();
-                for (int i = 0; i < params.size(); i++) {
-                    // Fix me
-                    // e.g call (a, b) -> a + b without params with cause IndexOutOfBoundsException
-                    var val = evalType(list.get(i + 1), env);
+                if (params.size() != args.size()) {
+                    throw new EvalException(String.format(
+                        "the number of arguments not match lambda defination\n\tlambda `%s` expected %d arguments, found %d",
+                        s, params.size(), args.size()
+                    ));
+                }
+                for (int i = 0; i < args.size(); i++) {
+                    var val = evalType(args.get(i), env);
                     new_env.set(params.get(i), val);
                 }
                 yield evalType(new Type.List(body), new_env);
@@ -292,25 +297,29 @@ public class Eval {
     }
 
     public static Type evalList(List<Type> list, Env env) throws EvalException {
-        var head = list.get(0);
-        return switch (head) {
-            case Type.UnaryOperator uop -> evalUnaryOperator(list, env);
-            case Type.BinaryOperator bop -> evalBinaryOperator(list, env);
-            case Type.Keyword keyword -> evalKeyword(list, env);
-            case Type.Symbol sym -> evalFunctionCall(sym.val(), list, env);
-            default -> {
-                var new_list = new ArrayList<Type>();
-                for (var type : list) {
-                    var res = evalType(type, env);
-                    switch (res) {
-                        case Type.Unit __ -> {
+        try {
+            var head = list.get(0);
+            return switch (head) {
+                case Type.UnaryOperator uop -> evalUnaryOperator(list, env);
+                case Type.BinaryOperator bop -> evalBinaryOperator(list, env);
+                case Type.Keyword keyword -> evalKeyword(list, env);
+                case Type.Symbol sym -> evalFunctionCall(sym.val(), list, env);
+                default -> {
+                    var new_list = new ArrayList<Type>();
+                    for (var type : list) {
+                        var res = evalType(type, env);
+                        switch (res) {
+                            case Type.Unit __ -> {
+                            }
+                            default -> new_list.add(res);
                         }
-                        default -> new_list.add(res);
                     }
+                    yield new Type.List(new_list);
                 }
-                yield new Type.List(new_list);
-            }
-        };
+            };
+        } catch (IndexOutOfBoundsException e) {
+            return new Type.Unit();
+        }
     }
 
     private static Type evalKeyword(List<Type> list, Env env) throws EvalException {
