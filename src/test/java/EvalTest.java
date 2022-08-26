@@ -100,6 +100,33 @@ public class EvalTest {
     }
 
     @Test
+    void testCar() throws EmptyException, EvalException, ParseException {
+        Assertions.assertEquals(
+            Eval.eval("(car ())", new Env()),
+            new Type.Nil()
+        );
+        Assertions.assertEquals(
+            Eval.eval("(car (1 2 3))", new Env()),
+            new Type.Integer(1)
+        );
+    }
+
+    @Test
+    void testCdr() throws EmptyException, EvalException, ParseException {
+        Assertions.assertEquals(
+            Eval.eval("(cdr ())", new Env()),
+            new Type.Nil()
+        );
+        Assertions.assertEquals(
+            Eval.eval("(cdr (1 2 3))", new Env()),
+            new Type.List(new ArrayList<>() {{
+                add(new Type.Integer(2));
+                add(new Type.Integer(3));
+            }})
+        );
+    }
+
+    @Test
     void testFunc() throws EmptyException, EvalException, ParseException {
         var program = """
             (

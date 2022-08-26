@@ -330,9 +330,42 @@ public class Eval {
                 case "lambda" -> evalFunctionDefinition(list);
                 case "if" -> evalIf(list, env);
                 case "null?" -> evalNull(list, env);
+                case "car" -> evalCar(list, env);
+                case "cdr" -> evalCdr(list, env);
                 default -> throw new EvalException("Unknown keyword: " + keyword.val());
             };
             default -> throw new EvalException("Invalid keyword: " + head);
+        };
+    }
+
+    private static Type evalCar(List<Type> list, Env env) throws EvalException {
+        if (list.size() != 2) {
+            throw new EvalException("invalid number of arguments for `car`");
+        }
+
+        var val = evalType(list.get(1), env);
+        return switch (val) {
+            case Type.Nil nil -> nil;
+            case Type.List l -> switch (l.val().size()) {
+                case 0 -> new Type.Nil();
+                default -> l.val().get(0);
+            };
+            default -> throw new EvalException("invalid argument type for `car`");
+        };
+    }
+
+    private static Type evalCdr(List<Type> list, Env env) throws EvalException {
+        if (list.size() != 2) {
+            throw new EvalException("invalid number of arguments for `cdr`");
+        }
+        var val = evalType(list.get(1), env);
+        return switch (val) {
+            case Type.Nil nil -> nil;
+            case Type.List l -> switch (l.val().size()) {
+                case 0 -> new Type.Nil();
+                default -> new Type.List(l.val().subList(1, l.val().size()));
+            };
+            default -> throw new EvalException("invalid argument type for `cdr`");
         };
     }
 
