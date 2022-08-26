@@ -318,7 +318,7 @@ public class Eval {
                 }
             };
         } catch (IndexOutOfBoundsException e) {
-            return new Type.Unit();
+            return new Type.Nil();
         }
     }
 
@@ -329,9 +329,23 @@ public class Eval {
                 case "define" -> evalDefine(list, env);
                 case "lambda" -> evalFunctionDefinition(list);
                 case "if" -> evalIf(list, env);
+                case "null?" -> evalNull(list, env);
                 default -> throw new EvalException("Unknown keyword: " + keyword.val());
             };
             default -> throw new EvalException("Invalid keyword: " + head);
+        };
+    }
+
+    private static Type evalNull(List<Type> list, Env env) throws EvalException {
+        if (list.size() != 2) {
+            throw new EvalException("invalid number of arguments for null?");
+        }
+
+        var val = evalType(list.get(1), env);
+        return switch (val) {
+            case Type.Nil nil -> new Type.Bool(true);
+            case Type.List l -> new Type.Bool(false);
+            default -> throw new EvalException("invalid argument type for null?");
         };
     }
 
@@ -344,6 +358,7 @@ public class Eval {
             case Type.Keyword k -> k;
             case Type.Lambda __ -> new Type.Unit();
             case Type.Unit u -> u;
+            case Type.Nil nil -> nil;
             case Type.UnaryOperator uop -> uop;
             case Type.BinaryOperator bop -> bop;
         };

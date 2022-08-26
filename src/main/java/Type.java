@@ -1,8 +1,15 @@
 import java.util.Iterator;
 
 public sealed interface Type
-    permits Type.BinaryOperator, Type.Bool, Type.Integer, Type.Keyword, Type.Lambda, Type.List,
-    Type.Symbol, Type.UnaryOperator, Type.Unit {
+    permits Type.BinaryOperator, Type.Bool, Type.Integer, Type.Keyword, Type.Lambda, Type.List, Type.Nil, Type.Symbol,
+    Type.UnaryOperator, Type.Unit {
+
+    record Nil() implements Type {
+        @Override
+        public String toString() {
+            return "Nil";
+        }
+    }
 
     record Unit() implements Type {
         @Override
