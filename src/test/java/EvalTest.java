@@ -127,6 +127,36 @@ public class EvalTest {
     }
 
     @Test
+    void testQuote() throws EmptyException, EvalException, ParseException {
+        Assertions.assertEquals(
+            Eval.eval("(quote a)", new Env()),
+            new Type.Symbol("a")
+        );
+        Assertions.assertEquals(
+            Eval.eval("(quote (+ a b 1))", new Env()),
+            new Type.List(new ArrayList<>() {{
+                add(new Type.Symbol("+"));
+                add(new Type.Symbol("a"));
+                add(new Type.Symbol("b"));
+                add(new Type.Integer(1));
+            }})
+        );
+        Assertions.assertEquals(
+            Eval.eval("(quote ((a (b c)) d))", new Env()),
+            new Type.List(new ArrayList<>() {{
+                add(new Type.List(new ArrayList<>() {{
+                    add(new Type.Symbol("a"));
+                    add(new Type.List(new ArrayList<>() {{
+                        add(new Type.Symbol("b"));
+                        add(new Type.Symbol("c"));
+                    }}));
+                }}));
+                add(new Type.Symbol("d"));
+            }})
+        );
+    }
+
+    @Test
     void testFunc() throws EmptyException, EvalException, ParseException {
         var program = """
             (

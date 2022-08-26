@@ -332,9 +332,37 @@ public class Eval {
                 case "null?" -> evalNull(list, env);
                 case "car" -> evalCar(list, env);
                 case "cdr" -> evalCdr(list, env);
+                case "quote" -> evalQuote(list, env);
                 default -> throw new EvalException("Unknown keyword: " + keyword.val());
             };
             default -> throw new EvalException("Invalid keyword: " + head);
+        };
+    }
+
+    private static Type evalQuote(List<Type> list, Env env) throws EvalException {
+        if (list.size() != 2) {
+            throw new EvalException("invalid number of arguments for `quote`");
+        }
+        return convertToQuote(list.get(1));
+    }
+
+    private static Type convertToQuote(Type type) throws EvalException {
+        return switch (type) {
+            case Type.BinaryOperator bop -> new Type.Symbol(bop.val());
+            case Type.UnaryOperator uop -> new Type.Symbol(uop.val());
+            case Type.Keyword keyword -> new Type.Symbol(keyword.val());
+            case Type.Symbol sym -> sym;
+            case Type.Integer i -> i;
+            case Type.List l -> {
+                var li = l.val();
+                var res = new ArrayList<Type>();
+                for (int i = 0; i < li.size(); i++) {
+                    var val = convertToQuote(li.get(i));
+                    res.add(val);
+                }
+                yield new Type.List(res);
+            }
+            default -> throw new EvalException("invalid argument type for `quote`");
         };
     }
 
