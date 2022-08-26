@@ -88,6 +88,18 @@ public class EvalTest {
     }
 
     @Test
+    void testNull() throws EmptyException, EvalException, ParseException {
+        Assertions.assertEquals(
+            Eval.eval("(null? ())", new Env()),
+            new Type.Bool(true)
+        );
+        Assertions.assertEquals(
+            Eval.eval("(null? (1 2 3))", new Env()),
+            new Type.Bool(false)
+        );
+    }
+
+    @Test
     void testFunc() throws EmptyException, EvalException, ParseException {
         var program = """
             (
