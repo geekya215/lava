@@ -29,7 +29,8 @@ public class Parser {
                             "<", ">", "=", "!=", "<=", ">=",
                             "and", "or" -> res.add(new Type.BinaryOperator(s));
                         case "define", "lambda", "if",
-                            "null?", "car", "cdr", "quote" -> res.add(new Type.Keyword(s));
+                            "null?", "car", "cdr", "quote",
+                            "atom" -> res.add(new Type.Keyword(s));
                         default -> res.add(new Type.Symbol(s));
                     }
                 }

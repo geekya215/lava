@@ -157,6 +157,34 @@ public class EvalTest {
     }
 
     @Test
+    void testAtom() throws EmptyException, EvalException, ParseException {
+        Assertions.assertEquals(
+            Eval.eval("(atom 1)", new Env()),
+            new Type.Bool(true)
+        );
+        Assertions.assertEquals(
+            Eval.eval("(atom (quote a))", new Env()),
+            new Type.Bool(true)
+        );
+        Assertions.assertEquals(
+            Eval.eval("(atom ())", new Env()),
+            new Type.Bool(true)
+        );
+        Assertions.assertEquals(
+            Eval.eval("(atom (lambda () ()))", new Env()),
+            new Type.Bool(true)
+        );
+        Assertions.assertEquals(
+            Eval.eval("(atom (1 2 3))", new Env()),
+            new Type.Bool(false)
+        );
+        Assertions.assertEquals(
+            Eval.eval("(atom (quote (a b 1 2 3)))", new Env()),
+            new Type.Bool(false)
+        );
+    }
+
+    @Test
     void testFunc() throws EmptyException, EvalException, ParseException {
         var program = """
             (

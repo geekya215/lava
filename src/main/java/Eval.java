@@ -304,6 +304,8 @@ public class Eval {
                 case Type.BinaryOperator bop -> evalBinaryOperator(list, env);
                 case Type.Keyword keyword -> evalKeyword(list, env);
                 case Type.Symbol sym -> evalFunctionCall(sym.val(), list, env);
+                // Todo
+                // lambda function immediate call
                 default -> {
                     var new_list = new ArrayList<Type>();
                     for (var type : list) {
@@ -333,9 +335,21 @@ public class Eval {
                 case "car" -> evalCar(list, env);
                 case "cdr" -> evalCdr(list, env);
                 case "quote" -> evalQuote(list, env);
+                case "atom" -> evalAtom(list, env);
                 default -> throw new EvalException("Unknown keyword: " + keyword.val());
             };
             default -> throw new EvalException("Invalid keyword: " + head);
+        };
+    }
+
+    private static Type evalAtom(List<Type> list, Env env) throws EvalException {
+        if (list.size() != 2) {
+            throw new EvalException("invalid number of arguments for `atom`");
+        }
+        var val = evalType(list.get(1), env);
+        return switch (val) {
+            case Type.List l -> new Type.Bool(false);
+            default -> new Type.Bool(true);
         };
     }
 
