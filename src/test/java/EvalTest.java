@@ -213,6 +213,49 @@ public class EvalTest {
     }
 
     @Test
+    void testCons() throws EmptyException, EvalException, ParseException {
+        Assertions.assertEquals(
+            Eval.eval("(cons 1 (2 3))", new Env()),
+            new Type.List(new ArrayList<>() {{
+                add(new Type.Integer(1));
+                add(new Type.Integer(2));
+                add(new Type.Integer(3));
+            }})
+        );
+        Assertions.assertEquals(
+            Eval.eval("(cons (quote a) (quote (b c)))", new Env()),
+            new Type.List(new ArrayList<>() {{
+                add(new Type.Symbol("a"));
+                add(new Type.Symbol("b"));
+                add(new Type.Symbol("c"));
+            }})
+        );
+        Assertions.assertEquals(
+            Eval.eval("(cons (quote (a b)) (quote (c d)))", new Env()),
+            new Type.List(new ArrayList<>() {{
+                add(new Type.List(new ArrayList<>() {{
+                    add(new Type.Symbol("a"));
+                    add(new Type.Symbol("b"));
+                }}));
+                add(new Type.List(new ArrayList<>() {{
+                    add(new Type.Symbol("c"));
+                    add(new Type.Symbol("d"));
+                }}));
+            }})
+        );
+        Assertions.assertEquals(
+            Eval.eval("(cons (quote (a b)) (quote c))", new Env()),
+            new Type.List(new ArrayList<>() {{
+                add(new Type.List(new ArrayList<>() {{
+                    add(new Type.Symbol("a"));
+                    add(new Type.Symbol("b"));
+                }}));
+                add(new Type.Symbol("c"));
+            }})
+        );
+    }
+
+    @Test
     void testFunc() throws EmptyException, EvalException, ParseException {
         var program = """
             (

@@ -362,10 +362,31 @@ public class Eval {
                 case "cdr" -> evalCdr(list, env);
                 case "quote" -> evalQuote(list, env);
                 case "atom" -> evalAtom(list, env);
+                case "cons" -> evalCons(list, env);
                 default -> throw new EvalException("Unknown keyword: " + keyword.val());
             };
             default -> throw new EvalException("Invalid keyword: " + head);
         };
+    }
+
+    private static Type evalCons(List<Type> list, Env env) throws EvalException {
+        if (list.size() != 3) {
+            throw new EvalException("invalid number of arguments for `cons`");
+        }
+
+        var head = evalType(list.get(1), env);
+        var tail = evalType(list.get(2), env);
+
+        if (!(head instanceof Type.List) && (tail instanceof Type.List r)) {
+            var res = r.val();
+            res.add(0, head);
+            return new Type.List(res);
+        } else {
+            return new Type.List(new ArrayList<>() {{
+                add(head);
+                add(tail);
+            }});
+        }
     }
 
     private static Type evalAtom(List<Type> list, Env env) throws EvalException {
