@@ -304,8 +304,7 @@ public class Eval {
                 case Type.BinaryOperator bop -> evalBinaryOperator(list, env);
                 case Type.Keyword keyword -> evalKeyword(list, env);
                 case Type.Symbol sym -> evalFunctionCall(sym.val(), list, env);
-                // Todo
-                // lambda function immediate call
+                case Type.Lambda lambda -> evalLambda(list, env);
                 default -> {
                     var new_list = new ArrayList<Type>();
                     for (var type : list) {
@@ -316,12 +315,39 @@ public class Eval {
                             default -> new_list.add(res);
                         }
                     }
+                    if (new_list.size() > 0 && new_list.get(0) instanceof Type.Lambda) {
+                        yield evalList(new_list, env);
+                    }
                     yield new Type.List(new_list);
                 }
             };
         } catch (IndexOutOfBoundsException e) {
             return new Type.Nil();
         }
+    }
+
+    private static Type evalLambda(List<Type> list, Env env) throws EvalException {
+        var lambda = list.get(0);
+        return switch (lambda) {
+            case Type.Lambda lamb -> {
+                var new_env = Env.extend(env);
+                var params = lamb.params();
+                var args = list.subList(1, list.size());
+                var body = lamb.body();
+                if (params.size() != args.size()) {
+                    throw new EvalException(String.format(
+                        "the number of arguments not match lambda defination\n\tlambda expected %d arguments, found %d",
+                        params.size(), args.size()
+                    ));
+                }
+                for (int i = 0; i < args.size(); i++) {
+                    var val = evalType(args.get(i), env);
+                    new_env.set(params.get(i), val);
+                }
+                yield evalType(new Type.List(body), new_env);
+            }
+            default -> throw new EvalException("invalid lambda call");
+        };
     }
 
     private static Type evalKeyword(List<Type> list, Env env) throws EvalException {

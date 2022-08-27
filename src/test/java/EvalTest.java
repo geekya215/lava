@@ -185,6 +185,34 @@ public class EvalTest {
     }
 
     @Test
+    void testLambda() throws EmptyException, EvalException, ParseException {
+        Assertions.assertEquals(
+            Eval.eval("((lambda (n) (+ n 1)) 1)", new Env()),
+            new Type.Integer(2)
+        );
+        Assertions.assertEquals(
+            Eval.eval("((lambda (n) (= n 1)) 1)", new Env()),
+            new Type.Bool(true)
+        );
+        Assertions.assertEquals(
+            Eval.eval("((lambda (n) (= n 1)) 1)", new Env()),
+            new Type.Bool(true)
+        );
+        Assertions.assertEquals(
+            Eval.eval("((lambda (n) (atom n)) 1)", new Env()),
+            new Type.Bool(true)
+        );
+        Assertions.assertEquals(
+            Eval.eval("((lambda (n) (atom n)) (quote (1 2 3)))", new Env()),
+            new Type.Bool(false)
+        );
+        Assertions.assertEquals(
+            Eval.eval("((lambda (a b x) (+ (* a (* x x)) (* b x))) 4 2 3)", new Env()),
+            new Type.Integer(42)
+        );
+    }
+
+    @Test
     void testFunc() throws EmptyException, EvalException, ParseException {
         var program = """
             (
