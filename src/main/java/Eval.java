@@ -377,10 +377,14 @@ public class Eval {
         var head = evalType(list.get(1), env);
         var tail = evalType(list.get(2), env);
 
-        if (!(head instanceof Type.List) && (tail instanceof Type.List r)) {
+        if (tail instanceof Type.List r) {
             var res = r.val();
             res.add(0, head);
             return new Type.List(res);
+        } else if (tail instanceof Type.Nil) {
+            return new Type.List(new ArrayList<>() {{
+                add(head);
+            }});
         } else {
             return new Type.List(new ArrayList<>() {{
                 add(head);
@@ -451,7 +455,7 @@ public class Eval {
         return switch (val) {
             case Type.Nil nil -> nil;
             case Type.List l -> switch (l.val().size()) {
-                case 0 -> new Type.Nil();
+                case 0, 1 -> new Type.Nil();
                 default -> new Type.List(l.val().subList(1, l.val().size()));
             };
             default -> throw new EvalException("invalid argument type for `cdr`");
@@ -466,8 +470,7 @@ public class Eval {
         var val = evalType(list.get(1), env);
         return switch (val) {
             case Type.Nil nil -> new Type.Bool(true);
-            case Type.List l -> new Type.Bool(false);
-            default -> throw new EvalException("invalid argument type for null?");
+            default -> new Type.Bool(false);
         };
     }
 

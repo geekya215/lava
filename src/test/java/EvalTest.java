@@ -231,16 +231,21 @@ public class EvalTest {
             }})
         );
         Assertions.assertEquals(
+            Eval.eval("(cons 1 2)", new Env()),
+            new Type.List(new ArrayList<>() {{
+                add(new Type.Integer(1));
+                add(new Type.Integer(2));
+            }})
+        );
+        Assertions.assertEquals(
             Eval.eval("(cons (quote (a b)) (quote (c d)))", new Env()),
             new Type.List(new ArrayList<>() {{
                 add(new Type.List(new ArrayList<>() {{
                     add(new Type.Symbol("a"));
                     add(new Type.Symbol("b"));
                 }}));
-                add(new Type.List(new ArrayList<>() {{
-                    add(new Type.Symbol("c"));
-                    add(new Type.Symbol("d"));
-                }}));
+                add(new Type.Symbol("c"));
+                add(new Type.Symbol("d"));
             }})
         );
         Assertions.assertEquals(
