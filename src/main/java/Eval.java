@@ -92,6 +92,18 @@ public class Eval {
                             right.getClass());
                     }
                 }
+                case "mod" -> {
+                    if (left instanceof Type.Integer l && right instanceof Type.Integer r) {
+                        yield new Type.Integer(l.val() % r.val());
+                    } else {
+                        throw new BinaryOperatorException(
+                            "mod",
+                            Type.Integer.class,
+                            Type.Integer.class,
+                            left.getClass(),
+                            right.getClass());
+                    }
+                }
                 case "<" -> {
                     if (left instanceof Type.Integer l && right instanceof Type.Integer r) {
                         yield new Type.Bool(l.val() < r.val());

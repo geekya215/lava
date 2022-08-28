@@ -26,7 +26,7 @@ public class Parser {
                     switch (s) {
                         case "neg", "not" -> res.add(new Type.UnaryOperator(s));
                         case "+", "-", "*", "/",
-                            "<", ">", "=", "!=", "<=", ">=",
+                            "<", ">", "=", "!=", "<=", ">=", "mod",
                             "and", "or" -> res.add(new Type.BinaryOperator(s));
                         case "define", "lambda", "if",
                             "null?", "car", "cdr", "cons", "quote",
