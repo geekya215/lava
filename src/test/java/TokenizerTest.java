@@ -1,6 +1,6 @@
-import io.geekya215.lava.Tokenizer;
 import io.geekya215.lava.Token;
-import io.geekya215.lava.errors.TokenizerError;
+import io.geekya215.lava.Tokenizer;
+import io.geekya215.lava.exceptions.TokenizerException;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
@@ -9,7 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class TokenizerTest {
     @Test
-    void getArithmeticToken() throws TokenizerError {
+    void getArithmeticToken() throws TokenizerException {
         var input = "+ - * / mod neg";
         var actualTokens = Tokenizer.tokenize(input);
         var expectedTokens = new ArrayList<>() {{
@@ -20,11 +20,22 @@ public class TokenizerTest {
             add(new Token.Mod());
             add(new Token.Neg());
         }};
-        assertEquals(actualTokens, expectedTokens);
+        assertEquals(expectedTokens, actualTokens);
     }
 
     @Test
-    void getIntegerToken() throws TokenizerError {
+    void getBooleanLiterally() throws TokenizerException {
+        var input = "#t #f";
+        var actualTokens = Tokenizer.tokenize(input);
+        var expectedTokens = new ArrayList<>() {{
+            add(new Token.True());
+            add(new Token.False());
+        }};
+        assertEquals(expectedTokens, actualTokens);
+    }
+
+    @Test
+    void getIntegerToken() throws TokenizerException {
         var input = "123 321 1";
         var actualTokens = Tokenizer.tokenize(input);
         var expectedTokens = new ArrayList<>() {{
@@ -32,11 +43,11 @@ public class TokenizerTest {
             add(new Token.Number(321));
             add(new Token.Number(1));
         }};
-        assertEquals(actualTokens, expectedTokens);
+        assertEquals(expectedTokens, actualTokens);
     }
 
     @Test
-    void withParenthesis() throws TokenizerError {
+    void withParenthesis() throws TokenizerException {
         var input = "(+ 123 - 321 1)";
         var actualTokens = Tokenizer.tokenize(input);
         var expectedTokens = new ArrayList<>() {{
@@ -48,11 +59,11 @@ public class TokenizerTest {
             add(new Token.Number(1));
             add(new Token.RightParenthesis());
         }};
-        assertEquals(actualTokens, expectedTokens);
+        assertEquals(expectedTokens, actualTokens);
     }
 
     @Test
-    void withNestParenthesis() throws TokenizerError {
+    void withNestParenthesis() throws TokenizerException {
         var input = "(* (+ 123 4 ) (neg 321))";
         var actualTokens = Tokenizer.tokenize(input);
         var expectedTokens = new ArrayList<>() {{
@@ -69,11 +80,11 @@ public class TokenizerTest {
             add(new Token.RightParenthesis());
             add(new Token.RightParenthesis());
         }};
-        assertEquals(actualTokens, expectedTokens);
+        assertEquals(expectedTokens,actualTokens );
     }
 
     @Test
-    void withNilLiterally() throws TokenizerError {
+    void withNilLiterally() throws TokenizerException {
         var input = "(nil 1 nil (+ 1 2))";
         var actualTokens = Tokenizer.tokenize(input);
         var expectedTokens = new ArrayList<>() {{
@@ -88,6 +99,6 @@ public class TokenizerTest {
             add(new Token.RightParenthesis());
             add(new Token.RightParenthesis());
         }};
-        assertEquals(actualTokens, expectedTokens);
+        assertEquals(expectedTokens, actualTokens);
     }
 }

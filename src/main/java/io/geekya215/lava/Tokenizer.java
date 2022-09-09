@@ -17,6 +17,8 @@ public final class Tokenizer {
                 case "nil" -> tokens.add(new Token.Nil());
                 case "(" -> tokens.add(new Token.LeftParenthesis());
                 case ")" -> tokens.add(new Token.RightParenthesis());
+                case "#t" -> tokens.add(new Token.True());
+                case "#f" -> tokens.add(new Token.False());
                 case "+" -> tokens.add(new Token.Plus());
                 case "-" -> tokens.add(new Token.Minus());
                 case "*" -> tokens.add(new Token.Mul());

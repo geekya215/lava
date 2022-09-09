@@ -56,6 +56,14 @@ public final class Parser {
                     tokens.next();
                     yield new IntegerNode(n.number());
                 }
+                case Token.True _t -> {
+                    tokens.next();
+                    yield new TrueNode();
+                }
+                case Token.False _f -> {
+                    tokens.next();
+                    yield new FalseNode();
+                }
                 case Token.Plus plus -> {
                     tokens.next();
                     yield new SymbolNode("+");
