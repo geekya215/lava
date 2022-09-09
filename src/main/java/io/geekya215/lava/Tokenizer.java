@@ -1,13 +1,13 @@
 package io.geekya215.lava;
 
-import io.geekya215.lava.errors.TokenizerError;
+import io.geekya215.lava.exceptions.TokenizerException;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
 
-public class Tokenizer {
-    public static List<Token> tokenize(String input) throws TokenizerError {
+public final class Tokenizer {
+    public static List<Token> tokenize(String input) throws TokenizerException {
         var tokens = new ArrayList<Token>();
         var text = input.replaceAll("\\(", " ( ").replaceAll("\\)", " ) ");
         var tokenizer = new StringTokenizer(text);
@@ -28,7 +28,7 @@ public class Tokenizer {
                         var num = Integer.parseInt(token);
                         tokens.add(new Token.Number(num));
                     } catch (Exception e) {
-                        throw new TokenizerError(token);
+                        throw new TokenizerException(token);
                     }
                 }
             }

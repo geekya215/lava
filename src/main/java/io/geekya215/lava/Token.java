@@ -3,6 +3,7 @@ package io.geekya215.lava;
 public sealed interface Token permits
     Token.Div, Token.LeftParenthesis, Token.Minus, Token.Mod, Token.Mul, Token.Neg,
     Token.Nil, Token.Number, Token.Plus, Token.RightParenthesis {
+
     record Nil() implements Token {
         @Override
         public String toString() {
