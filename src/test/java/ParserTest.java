@@ -1,87 +1,38 @@
 import io.geekya215.lava.Parser;
-import io.geekya215.lava.SExpr;
-import io.geekya215.lava.Token;
 import io.geekya215.lava.Tokenizer;
-import io.geekya215.lava.errors.ParserError;
-import io.geekya215.lava.errors.TokenizerError;
+import io.geekya215.lava.exceptions.ParserException;
+import io.geekya215.lava.exceptions.TokenizerException;
+import io.geekya215.lava.nodes.ConsNode;
+import io.geekya215.lava.nodes.IntegerNode;
+import io.geekya215.lava.nodes.NilNode;
 import org.junit.jupiter.api.Test;
 
-import java.util.ArrayList;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class ParserTest {
     @Test
-    void getAtom() throws TokenizerError, ParserError {
+    void getAtom() throws TokenizerException, ParserException {
         var tokens = Tokenizer.tokenize("1");
-        var actualAtom = Parser.parse(tokens);
-        var expectedAtom = new SExpr.Atom(new Token.Number(1));
-        assertEquals(actualAtom, expectedAtom);
+        var actualAtom = new Parser(tokens).parse();
+        var expectedAtom = new IntegerNode(1);
+        assertEquals(expectedAtom, actualAtom);
     }
 
     @Test
-    void getCons() throws TokenizerError, ParserError {
+    void getCons() throws TokenizerException, ParserException {
         var tokens = Tokenizer.tokenize("(1 2)");
-        var actualCons = Parser.parse(tokens);
-        var expectedCons = new SExpr.Cons(
-            new ArrayList<>() {{
-                add(new SExpr.Atom(new Token.Number(1)));
-                add(new SExpr.Atom(new Token.Number(2)));
-            }}
-        );
-        assertEquals(actualCons, expectedCons);
+        var actualCons = new Parser(tokens).parse();
+        var expectedCons = new ConsNode(new IntegerNode(1), new ConsNode(new IntegerNode(2), new NilNode()));
+        assertEquals(expectedCons, actualCons);
     }
 
     @Test
-    void getNestCons() throws TokenizerError, ParserError {
-        var tokens = Tokenizer.tokenize("((1 2) 3)");
-        var actualCons = Parser.parse(tokens);
-        var expectedCons = new SExpr.Cons(
-            new ArrayList<>() {{
-                add(new SExpr.Cons(new ArrayList<>() {{
-                    add(new SExpr.Atom(new Token.Number(1)));
-                    add(new SExpr.Atom(new Token.Number(2)));
-                }}));
-                add(new SExpr.Atom(new Token.Number(3)));
-            }}
-        );
-        assertEquals(actualCons, expectedCons);
-    }
-
-    @Test
-    void unmatchedAtomLeftParenthesis() throws TokenizerError {
-        var tokens = Tokenizer.tokenize("(");
-        var actualError = assertThrows(ParserError.class, () -> Parser.parse(tokens));
-        var actualMessage = actualError.getMessage();
-        var expectedMessage = "unexpected left parenthesis";
-        assertEquals(actualMessage, expectedMessage);
-    }
-
-    @Test
-    void unmatchedAtomRightParenthesis() throws TokenizerError {
-        var tokens = Tokenizer.tokenize(")");
-        var actualError = assertThrows(ParserError.class, () -> Parser.parse(tokens));
-        var actualMessage = actualError.getMessage();
-        var expectedMessage = "unexpected right parenthesis";
-        assertEquals(actualMessage, expectedMessage);
-    }
-
-    @Test
-    void unmatchedConsLeftParenthesis() throws TokenizerError {
-        var tokens = Tokenizer.tokenize("((");
-        var actualError = assertThrows(ParserError.class, () -> Parser.parse(tokens));
-        var actualMessage = actualError.getMessage();
-        var expectedMessage = "expect right parenthesis";
-        assertEquals(actualMessage, expectedMessage);
-    }
-
-    @Test
-    void unmatchedConsRightParenthesis() throws TokenizerError {
-        var tokens = Tokenizer.tokenize("1))");
-        var actualError = assertThrows(ParserError.class, () -> Parser.parse(tokens));
-        var actualMessage = actualError.getMessage();
-        var expectedMessage = "expect left parenthesis, but got 1";
-        assertEquals(actualMessage, expectedMessage);
+    void getNestCons() throws TokenizerException, ParserException {
+        var tokens = Tokenizer.tokenize("( 1 ( 2 3))");
+        var actualCons = new Parser(tokens).parse();
+        var expectedCons = new ConsNode(new IntegerNode(1),
+            new ConsNode(new ConsNode(new IntegerNode(2),
+                new ConsNode(new IntegerNode(3), new NilNode())), new NilNode()));
+        assertEquals(expectedCons, actualCons);
     }
 }

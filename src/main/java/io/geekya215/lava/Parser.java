@@ -1,49 +1,78 @@
 package io.geekya215.lava;
 
-import io.geekya215.lava.errors.ParserError;
+import io.geekya215.lava.exceptions.ParserException;
+import io.geekya215.lava.nodes.ConsNode;
+import io.geekya215.lava.nodes.IntegerNode;
+import io.geekya215.lava.nodes.NilNode;
+import io.geekya215.lava.nodes.SExprNode;
+import io.geekya215.lava.utils.PeekingIterator;
 
-import java.util.ArrayList;
 import java.util.List;
 
-public class Parser {
-    public static SExpr parse(List<Token> tokens) throws ParserError {
-        if (tokens.size() == 1) {
-            var token = tokens.get(0);
-            return switch (token) {
-                case Token.LeftParenthesis lp -> throw new ParserError("unexpected left parenthesis");
-                case Token.RightParenthesis rp -> throw new ParserError("unexpected right parenthesis");
-                default -> new SExpr.Atom(token);
-            };
+public final class Parser {
+    private final PeekingIterator<Token> tokens;
+
+    public Parser(List<Token> tokens) {
+        this.tokens = new PeekingIterator<>(tokens);
+    }
+
+    //
+    // sexpr -> atom | lparen sexpr-list rparen
+    // sexpr-list -> sexpr sexpr-list |
+    // atom -> number | operator
+    // lparen -> (
+    // rparen -> )
+    //
+    public SExprNode parse() throws ParserException {
+        var peek = tokens.peek();
+        if (peek.isPresent() && peek.get() instanceof Token.LeftParenthesis) {
+            skip(Token.LeftParenthesis.class);
+            var cons = parseList();
+            skip(Token.RightParenthesis.class);
+            return cons;
         } else {
-            var cons = parseList(tokens);
-            return new SExpr.Cons(cons);
+            return parseAtom();
         }
     }
 
-    private static List<SExpr> parseList(List<Token> tokens) throws ParserError {
-        var head = tokens.remove(0);
-
-        if (!(head instanceof Token.LeftParenthesis)) {
-            throw new ParserError("expect left parenthesis, but got " + head);
-        }
-
-        var cons = new ArrayList<SExpr>();
-
-        while (!tokens.isEmpty()) {
-            var token = tokens.remove(0);
-            switch (token) {
-                case Token.LeftParenthesis lp -> {
-                    tokens.add(0, new Token.LeftParenthesis());
-                    var sub = parseList(tokens);
-                    cons.add(new SExpr.Cons(sub));
+    private SExprNode parseList() throws ParserException {
+        var peek = tokens.peek();
+        if (peek.isPresent()) {
+            return switch (peek.get()) {
+                case Token.RightParenthesis rp -> new NilNode();
+                default -> {
+                    var car = parse();
+                    var cdr = parseList();
+                    yield new ConsNode(car, cdr);
                 }
-                case Token.RightParenthesis rp -> {
-                    return cons;
-                }
-                default -> cons.add(new SExpr.Atom(token));
-            }
+            };
+        } else {
+            throw new ParserException("expected token");
         }
+    }
 
-        throw new ParserError("expect right parenthesis");
+    private SExprNode parseAtom() throws ParserException {
+        var peek = tokens.peek();
+        if (peek.isPresent()) {
+            var token = peek.get();
+            return switch (token) {
+                case Token.Number n -> {
+                    tokens.next();
+                    yield new IntegerNode(n.number());
+                }
+                default -> throw new ParserException("unexpected token: " + token);
+            };
+        } else {
+            throw new ParserException("expected atom");
+        }
+    }
+
+    private void skip(Class<? extends Token> clazz) throws ParserException {
+        var peek = tokens.peek();
+        if (peek.isPresent() && peek.get().getClass() == clazz) {
+            tokens.next();
+        } else {
+            throw new ParserException("expected " + clazz.getSimpleName());
+        }
     }
 }

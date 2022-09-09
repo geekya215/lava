@@ -1,4 +1,4 @@
-package io.geekya215.lava;
+package io.geekya215.lava.utils;
 
 import java.util.List;
 import java.util.Optional;

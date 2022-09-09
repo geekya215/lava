@@ -1,7 +1,7 @@
-package io.geekya215.lava.errors;
+package io.geekya215.lava.exceptions;
 
-public class ParserError extends Throwable {
-    public ParserError(String message) {
-        super(message);
+public class ParserException extends Throwable {
+    public ParserException(String reason) {
+        super(reason);
     }
 }

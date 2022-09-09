@@ -1,4 +1,4 @@
-package io.geekya215.lava.errors;
+package io.geekya215.lava.exceptions;
 
-public class InconvertibleError extends RuntimeException {
+public class InconvertibleException extends RuntimeException {
 }
