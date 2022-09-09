@@ -1,11 +1,7 @@
 package io.geekya215.lava;
 
 import io.geekya215.lava.exceptions.ParserException;
-import io.geekya215.lava.nodes.ConsNode;
-import io.geekya215.lava.nodes.IntegerNode;
-import io.geekya215.lava.nodes.NilNode;
-import io.geekya215.lava.nodes.SExprNode;
-import io.geekya215.lava.utils.PeekingIterator;
+import io.geekya215.lava.nodes.*;
 
 import java.util.List;
 
@@ -60,7 +56,31 @@ public final class Parser {
                     tokens.next();
                     yield new IntegerNode(n.number());
                 }
-                default -> throw new ParserException("unexpected token: " + token);
+                case Token.Plus plus -> {
+                    tokens.next();
+                    yield new SymbolNode("+");
+                }
+                case Token.Minus minus -> {
+                    tokens.next();
+                    yield new SymbolNode("-");
+                }
+                case Token.Mul mul -> {
+                    tokens.next();
+                    yield new SymbolNode("*");
+                }
+                case Token.Div div -> {
+                    tokens.next();
+                    yield new SymbolNode("/");
+                }
+                case Token.Mod mod -> {
+                    tokens.next();
+                    yield new SymbolNode("mod");
+                }
+                case Token.Neg neg -> {
+                    tokens.next();
+                    yield new SymbolNode("neg");
+                }
+                default -> throw new IllegalStateException("unexpected value: " + token);
             };
         } else {
             throw new ParserException("expected atom");
