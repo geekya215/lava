@@ -5,6 +5,8 @@ import io.geekya215.lava.exceptions.TokenizerException;
 import io.geekya215.lava.expr.*;
 import org.junit.jupiter.api.Test;
 
+import java.util.List;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class ExprTest {
@@ -113,6 +115,43 @@ public class ExprTest {
         var node = new Parser(tokens).parse();
         var actualExpr = Expr.from(node);
         var expectedExpr = new DivExpr(new IntegerExpr(1), new IntegerExpr(2));
+        assertEquals(expectedExpr, actualExpr);
+    }
+
+    @Test
+    void getLambda() throws TokenizerException, ParserException {
+        var tokens = Tokenizer.tokenize("(lambda (a b) (+ a b))");
+        var node = new Parser(tokens).parse();
+        var actualExpr = Expr.from(node);
+        var expectedExpr = new LambdaExpr(List.of("a", "b"), new PlusExpr(new RefExpr("a"), new RefExpr("b")));
+        assertEquals(expectedExpr, actualExpr);
+    }
+
+    @Test
+    void getTwoParamsApplication() throws TokenizerException, ParserException {
+        var tokens = Tokenizer.tokenize("(plus 1 2)");
+        var node = new Parser(tokens).parse();
+        var actualExpr = Expr.from(node);
+        var expectedExpr = new AppExpr(new RefExpr("plus"), List.of(new IntegerExpr(1), new IntegerExpr(2)));
+        assertEquals(expectedExpr, actualExpr);
+    }
+
+    @Test
+    void getThreeParamsApplication() throws TokenizerException, ParserException {
+        var tokens = Tokenizer.tokenize("(sum 1 2 3)");
+        var node = new Parser(tokens).parse();
+        var actualExpr = Expr.from(node);
+        var expectedExpr = new AppExpr(new RefExpr("sum"), List.of(new IntegerExpr(1), new IntegerExpr(2), new IntegerExpr(3)));
+        assertEquals(expectedExpr, actualExpr);
+    }
+
+    @Test
+    void getMoreThanThreeParamsApplication() throws TokenizerException, ParserException {
+        var tokens = Tokenizer.tokenize("(max 1 2 3 4 5)");
+        var node = new Parser(tokens).parse();
+        var actualExpr = Expr.from(node);
+        var expectedExpr = new AppExpr(new RefExpr("max"),
+            List.of(new IntegerExpr(1), new IntegerExpr(2), new IntegerExpr(3), new IntegerExpr(4), new IntegerExpr(5)));
         assertEquals(expectedExpr, actualExpr);
     }
 }
