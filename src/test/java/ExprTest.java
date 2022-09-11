@@ -154,4 +154,100 @@ public class ExprTest {
             List.of(new IntegerExpr(1), new IntegerExpr(2), new IntegerExpr(3), new IntegerExpr(4), new IntegerExpr(5)));
         assertEquals(expectedExpr, actualExpr);
     }
+
+    @Test
+    void getEqExpr() throws TokenizerException, ParserException {
+        var tokens = Tokenizer.tokenize("(= 1 2)");
+        var node = new Parser(tokens).parse();
+        var actualExpr = Expr.from(node);
+        var expectedExpr = new EqExpr(new IntegerExpr(1), new IntegerExpr(2));
+        assertEquals(expectedExpr, actualExpr);
+    }
+
+    @Test
+    void getLtExpr() throws TokenizerException, ParserException {
+        var tokens = Tokenizer.tokenize("(< 1 2)");
+        var node = new Parser(tokens).parse();
+        var actualExpr = Expr.from(node);
+        var expectedExpr = new LtExpr(new IntegerExpr(1), new IntegerExpr(2));
+        assertEquals(expectedExpr, actualExpr);
+    }
+
+    @Test
+    void getGtExpr() throws TokenizerException, ParserException {
+        var tokens = Tokenizer.tokenize("(> 1 2)");
+        var node = new Parser(tokens).parse();
+        var actualExpr = Expr.from(node);
+        var expectedExpr = new GtExpr(new IntegerExpr(1), new IntegerExpr(2));
+        assertEquals(expectedExpr, actualExpr);
+    }
+
+    @Test
+    void getLtEqExpr() throws TokenizerException, ParserException {
+        var tokens = Tokenizer.tokenize("(<= 1 2)");
+        var node = new Parser(tokens).parse();
+        var actualExpr = Expr.from(node);
+        var expectedExpr = new LtEqExpr(new IntegerExpr(1), new IntegerExpr(2));
+        assertEquals(expectedExpr, actualExpr);
+    }
+
+    @Test
+    void getGtEqExpr() throws TokenizerException, ParserException {
+        var tokens = Tokenizer.tokenize("(>= 1 2)");
+        var node = new Parser(tokens).parse();
+        var actualExpr = Expr.from(node);
+        var expectedExpr = new GtEqExpr(new IntegerExpr(1), new IntegerExpr(2));
+        assertEquals(expectedExpr, actualExpr);
+    }
+
+    @Test
+    void getIfExpr() throws TokenizerException, ParserException {
+        var tokens = Tokenizer.tokenize("(if (< 1 2) 1 2)");
+        var node = new Parser(tokens).parse();
+        var actualExpr = Expr.from(node);
+        var expectedExpr = new IfExpr(new LtExpr(new IntegerExpr(1), new IntegerExpr(2)), new IntegerExpr(1), new IntegerExpr(2));
+        assertEquals(expectedExpr, actualExpr);
+    }
+
+    @Test
+    void getNotExpr() throws TokenizerException, ParserException {
+        var tokens = Tokenizer.tokenize("(not (< 1 2))");
+        var node = new Parser(tokens).parse();
+        var actualExpr = Expr.from(node);
+        var expectedExpr = new NotExpr(new LtExpr(new IntegerExpr(1), new IntegerExpr(2)));
+        assertEquals(expectedExpr, actualExpr);
+    }
+
+    @Test
+    void getAndExpr() throws TokenizerException, ParserException {
+        var tokens = Tokenizer.tokenize("(and (< 1 2) (> 1 2))");
+        var node = new Parser(tokens).parse();
+        var actualExpr = Expr.from(node);
+        var expectedExpr = new AndExpr(
+            new LtExpr(new IntegerExpr(1), new IntegerExpr(2)),
+            new GtExpr(new IntegerExpr(1), new IntegerExpr(2)));
+        assertEquals(expectedExpr, actualExpr);
+    }
+
+    @Test
+    void getOrExpr() throws TokenizerException, ParserException {
+        var tokens = Tokenizer.tokenize("(or (< 1 2) (> 1 2))");
+        var node = new Parser(tokens).parse();
+        var actualExpr = Expr.from(node);
+        var expectedExpr = new OrExpr(
+            new LtExpr(new IntegerExpr(1), new IntegerExpr(2)),
+            new GtExpr(new IntegerExpr(1), new IntegerExpr(2)));
+        assertEquals(expectedExpr, actualExpr);
+    }
+
+    @Test
+    void getXorExpr() throws TokenizerException, ParserException {
+        var tokens = Tokenizer.tokenize("(xor (< 1 2) (> 1 2))");
+        var node = new Parser(tokens).parse();
+        var actualExpr = Expr.from(node);
+        var expectedExpr = new XorExpr(
+            new LtExpr(new IntegerExpr(1), new IntegerExpr(2)),
+            new GtExpr(new IntegerExpr(1), new IntegerExpr(2)));
+        assertEquals(expectedExpr, actualExpr);
+    }
 }

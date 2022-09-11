@@ -7,7 +7,10 @@ import java.util.ArrayList;
 
 public sealed interface Expr permits
     RefExpr, LambdaExpr, AppExpr,
-    BoolExpr, IntegerExpr, NilExpr,
+    BoolExpr, IfExpr,
+    EqExpr, LtExpr, LtEqExpr, GtExpr, GtEqExpr,
+    NotExpr, AndExpr, OrExpr, XorExpr,
+    IntegerExpr, NilExpr,
     PlusExpr, MinusExpr, MulExpr, DivExpr,
     ConsExpr, CarExpr, CdrExpr, QuoteExpr {
     static Expr from(SExprNode sexpr) throws ParserException {
@@ -31,10 +34,10 @@ public sealed interface Expr permits
                                 case "car" -> new CarExpr(from(arg));
                                 case "cdr" -> new CdrExpr(from(arg));
                                 case "quote" -> new QuoteExpr(from(arg));
+                                case "not" -> new NotExpr(from(arg));
                                 default -> buildApplication(consNode);
                             };
-                        }
-                        else if (size == 3) {
+                        } else if (size == 3) {
                             var car = nodes.get(1);
                             var cdr = nodes.get(2);
                             yield switch (symbolNode.val()) {
@@ -43,6 +46,14 @@ public sealed interface Expr permits
                                 case "-" -> new MinusExpr(from(car), from(cdr));
                                 case "*" -> new MulExpr(from(car), from(cdr));
                                 case "/" -> new DivExpr(from(car), from(cdr));
+                                case "=" -> new EqExpr(from(car), from(cdr));
+                                case "<" -> new LtExpr(from(car), from(cdr));
+                                case ">" -> new GtExpr(from(car), from(cdr));
+                                case "<=" -> new LtEqExpr(from(car), from(cdr));
+                                case ">=" -> new GtEqExpr(from(car), from(cdr));
+                                case "and" -> new AndExpr(from(car), from(cdr));
+                                case "or" -> new OrExpr(from(car), from(cdr));
+                                case "xor" -> new XorExpr(from(car), from(cdr));
                                 case "lambda" -> {
                                     var params = new ArrayList<String>();
                                     for (var p : car.toList()) {
@@ -53,6 +64,16 @@ public sealed interface Expr permits
                                         }
                                     }
                                     yield new LambdaExpr(params, from(cdr));
+                                }
+                                default -> buildApplication(consNode);
+                            };
+                        } else if (size == 4) {
+                            yield switch (symbolNode.val()) {
+                                case "if" -> {
+                                    var cond = nodes.get(1);
+                                    var trueBranch = nodes.get(2);
+                                    var falseBranch = nodes.get(3);
+                                    yield new IfExpr(from(cond), from(trueBranch), from(falseBranch));
                                 }
                                 default -> buildApplication(consNode);
                             };
