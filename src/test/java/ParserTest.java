@@ -17,6 +17,16 @@ public class ParserTest {
     }
 
     @Test
+    void getSymbols() throws TokenizerException, ParserException {
+        var tokens = Tokenizer.tokenize("(a b cd)");
+        var actualSymbols = new Parser(tokens).parse();
+        var expectedSymbols = new ConsNode(new SymbolNode("a"),
+            new ConsNode(new SymbolNode("b"),
+                new ConsNode(new SymbolNode("cd"), new NilNode())));
+        assertEquals(expectedSymbols, actualSymbols);
+    }
+
+    @Test
     void getOperators() throws TokenizerException, ParserException {
         var tokens = Tokenizer.tokenize("(+ - * / neg mod)");
         var actualOperators = new Parser(tokens).parse();
@@ -55,19 +65,22 @@ public class ParserTest {
 
     @Test
     void getCons() throws TokenizerException, ParserException {
-        var tokens = Tokenizer.tokenize("(1 2)");
+        var tokens = Tokenizer.tokenize("(1 2 a bc)");
         var actualCons = new Parser(tokens).parse();
-        var expectedCons = new ConsNode(new IntegerNode(1), new ConsNode(new IntegerNode(2), new NilNode()));
+        var expectedCons = new ConsNode(new IntegerNode(1),
+            new ConsNode(new IntegerNode(2),
+                new ConsNode(new SymbolNode("a"),
+                    new ConsNode(new SymbolNode("bc"), new NilNode()))));
         assertEquals(expectedCons, actualCons);
     }
 
     @Test
     void getNestCons() throws TokenizerException, ParserException {
-        var tokens = Tokenizer.tokenize("( 1 ( 2 3))");
+        var tokens = Tokenizer.tokenize("( 1 ( 2 bc))");
         var actualCons = new Parser(tokens).parse();
         var expectedCons = new ConsNode(new IntegerNode(1),
             new ConsNode(new ConsNode(new IntegerNode(2),
-                new ConsNode(new IntegerNode(3), new NilNode())), new NilNode()));
+                new ConsNode(new SymbolNode("bc"), new NilNode())), new NilNode()));
         assertEquals(expectedCons, actualCons);
     }
 }

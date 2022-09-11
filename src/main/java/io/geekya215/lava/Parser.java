@@ -92,6 +92,10 @@ public final class Parser {
                     tokens.next();
                     yield new NilNode();
                 }
+                case Token.Symbol symbol -> {
+                    tokens.next();
+                    yield new SymbolNode(symbol.value());
+                }
                 default -> throw new IllegalStateException("unexpected value: " + token);
             };
         } else {
