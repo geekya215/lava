@@ -88,6 +88,10 @@ public final class Parser {
                     tokens.next();
                     yield new SymbolNode("neg");
                 }
+                case Token.Nil nil -> {
+                    tokens.next();
+                    yield new NilNode();
+                }
                 default -> throw new IllegalStateException("unexpected value: " + token);
             };
         } else {

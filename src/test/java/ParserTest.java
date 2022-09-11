@@ -11,30 +11,46 @@ public class ParserTest {
     @Test
     void getNumber() throws TokenizerException, ParserException {
         var tokens = Tokenizer.tokenize("1");
-        var actualAtom = new Parser(tokens).parse();
-        var expectedAtom = new IntegerNode(1);
-        assertEquals(expectedAtom, actualAtom);
+        var actualNumber = new Parser(tokens).parse();
+        var expectedNumber = new IntegerNode(1);
+        assertEquals(expectedNumber, actualNumber);
     }
 
     @Test
     void getOperators() throws TokenizerException, ParserException {
         var tokens = Tokenizer.tokenize("(+ - * / neg mod)");
-        var actualAtom = new Parser(tokens).parse();
-        var expectedAtom = new ConsNode(new SymbolNode("+"),
+        var actualOperators = new Parser(tokens).parse();
+        var expectedOperators = new ConsNode(new SymbolNode("+"),
             new ConsNode(new SymbolNode("-"),
                 new ConsNode(new SymbolNode("*"),
                     new ConsNode(new SymbolNode("/"),
                         new ConsNode(new SymbolNode("neg"),
                             new ConsNode(new SymbolNode("mod"), new NilNode()))))));
-        assertEquals(expectedAtom, actualAtom);
+        assertEquals(expectedOperators, actualOperators);
     }
 
     @Test
     void getBooleanLiterally() throws TokenizerException, ParserException {
         var tokens = Tokenizer.tokenize("(#t #f)");
-        var actualAtom = new Parser(tokens).parse();
-        var expectedAtom = new ConsNode(new TrueNode(), new ConsNode(new FalseNode(), new NilNode()));
-        assertEquals(expectedAtom, actualAtom);
+        var actualBoolean = new Parser(tokens).parse();
+        var expectedBoolean = new ConsNode(new TrueNode(), new ConsNode(new FalseNode(), new NilNode()));
+        assertEquals(expectedBoolean, actualBoolean);
+    }
+
+    @Test
+    void getNilByEmptyList() throws TokenizerException, ParserException {
+        var tokens = Tokenizer.tokenize("()");
+        var actualCons = new Parser(tokens).parse();
+        var expectedCons = new NilNode();
+        assertEquals(expectedCons, actualCons);
+    }
+
+    @Test
+    void getNilByLiterally() throws TokenizerException, ParserException {
+        var tokens = Tokenizer.tokenize("nil");
+        var actualCons = new Parser(tokens).parse();
+        var expectedCons = new NilNode();
+        assertEquals(expectedCons, actualCons);
     }
 
     @Test
