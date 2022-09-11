@@ -30,7 +30,7 @@ public final class Tokenizer {
                         var num = Integer.parseInt(token);
                         tokens.add(new Token.Number(num));
                     } catch (Exception e) {
-                        throw new TokenizerException(token);
+                        tokens.add(new Token.Symbol(token));
                     }
                 }
             }

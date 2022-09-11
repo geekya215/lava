@@ -24,6 +24,18 @@ public class TokenizerTest {
     }
 
     @Test
+    void getSymbol() throws TokenizerException {
+        var input = "a b cd";
+        var actualTokens = Tokenizer.tokenize(input);
+        var expectedTokens = new ArrayList<>() {{
+            add(new Token.Symbol("a"));
+            add(new Token.Symbol("b"));
+            add(new Token.Symbol("cd"));
+        }};
+        assertEquals(expectedTokens, actualTokens);
+    }
+
+    @Test
     void getBooleanLiterally() throws TokenizerException {
         var input = "#t #f";
         var actualTokens = Tokenizer.tokenize(input);

@@ -1,9 +1,16 @@
 package io.geekya215.lava;
 
 public sealed interface Token permits
-    Token.Div, Token.False, Token.LeftParenthesis, Token.Minus, Token.Mod, Token.Mul,
+    Token.Div, Token.False, Token.LeftParenthesis, Token.Minus, Token.Mod, Token.Mul, Token.Symbol,
     Token.Neg, Token.Nil, Token.Number, Token.Plus, Token.RightParenthesis, Token.True
 {
+    record Symbol(String value) implements Token {
+        @Override
+        public String toString() {
+            return value;
+        }
+    }
+
     record Nil() implements Token {
         @Override
         public String toString() {
