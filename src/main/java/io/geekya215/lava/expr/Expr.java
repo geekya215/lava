@@ -1,6 +1,6 @@
 package io.geekya215.lava.expr;
 
-import io.geekya215.lava.exceptions.ParserException;
+import io.geekya215.lava.exception.ParserException;
 import io.geekya215.lava.nodes.*;
 
 import java.util.ArrayList;

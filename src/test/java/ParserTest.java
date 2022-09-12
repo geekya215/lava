@@ -1,7 +1,7 @@
 import io.geekya215.lava.Parser;
 import io.geekya215.lava.Tokenizer;
-import io.geekya215.lava.exceptions.ParserException;
-import io.geekya215.lava.exceptions.TokenizerException;
+import io.geekya215.lava.exception.ParserException;
+import io.geekya215.lava.exception.TokenizerException;
 import io.geekya215.lava.nodes.*;
 import org.junit.jupiter.api.Test;
 

@@ -1,6 +1,6 @@
 package io.geekya215.lava.nodes;
 
-import io.geekya215.lava.exceptions.InconvertibleException;
+import io.geekya215.lava.exception.InconvertibleException;
 
 import java.util.List;
 

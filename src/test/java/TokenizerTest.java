@@ -1,6 +1,6 @@
 import io.geekya215.lava.Token;
 import io.geekya215.lava.Tokenizer;
-import io.geekya215.lava.exceptions.TokenizerException;
+import io.geekya215.lava.exception.TokenizerException;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;

@@ -1,6 +1,6 @@
 package io.geekya215.lava;
 
-import io.geekya215.lava.exceptions.TokenizerException;
+import io.geekya215.lava.exception.TokenizerException;
 
 import java.util.ArrayList;
 import java.util.List;
