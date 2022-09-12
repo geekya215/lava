@@ -12,7 +12,7 @@ public sealed interface Expr permits
     NotExpr, AndExpr, OrExpr, XorExpr,
     IntegerExpr, NilExpr,
     PlusExpr, MinusExpr, MulExpr, DivExpr,
-    ConsExpr, CarExpr, CdrExpr, QuoteExpr {
+    ConsExpr, CarExpr, CdrExpr, QuoteExpr, SymbolExpr {
     static Expr from(SExprNode sexpr) throws ParserException {
         return switch (sexpr) {
             case SymbolNode symbolNode -> new RefExpr(symbolNode.val());
@@ -33,7 +33,7 @@ public sealed interface Expr permits
                             yield switch (symbolNode.val()) {
                                 case "car" -> new CarExpr(from(arg));
                                 case "cdr" -> new CdrExpr(from(arg));
-                                case "quote" -> new QuoteExpr(from(arg));
+                                case "quote" -> new QuoteExpr(buildQuote(arg));
                                 case "not" -> new NotExpr(from(arg));
                                 default -> buildApplication(consNode);
                             };
@@ -95,5 +95,20 @@ public sealed interface Expr permits
             args.add(from(arg));
         }
         return new AppExpr(fun, args);
+    }
+
+    static Expr buildQuote(SExprNode arg) throws ParserException {
+        return switch (arg) {
+            case ConsNode consNode -> {
+                var car = consNode.car();
+                var cdr = consNode.cdr();
+                yield new ConsExpr(buildQuote(car), buildQuote(cdr));
+            }
+            case SymbolNode symbolNode -> new SymbolExpr(symbolNode.val());
+            case IntegerNode integerNode -> new IntegerExpr(integerNode.val());
+            case TrueNode trueNode -> new BoolExpr(true);
+            case FalseNode falseNode -> new BoolExpr(false);
+            case NilNode nilNode -> new NilExpr();
+        };
     }
 }

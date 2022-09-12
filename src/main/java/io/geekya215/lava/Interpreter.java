@@ -8,6 +8,13 @@ public class Interpreter {
         return switch (expr) {
             case IntegerExpr integerExpr -> integerExpr;
             case BoolExpr boolExpr -> boolExpr;
+            case NilExpr nilExpr -> nilExpr;
+            case ConsExpr consExpr -> {
+                var car = eval(consExpr.car());
+                var cdr = eval(consExpr.cdr());
+                yield new ConsExpr(car, cdr);
+            }
+            case QuoteExpr quoteExpr -> quoteExpr.arg();
             case PlusExpr plusExpr -> {
                 var left = eval(plusExpr.left());
                 var right = eval(plusExpr.right());
@@ -126,6 +133,26 @@ public class Interpreter {
                     yield new BoolExpr(_l.value() ^ _r.value());
                 } else {
                     throw new EvalException("invalid type for xor expr");
+                }
+            }
+            case CarExpr carExpr -> {
+                var arg = eval(carExpr.arg());
+                if (arg instanceof ConsExpr _arg) {
+                    yield _arg.car();
+                } else if (arg instanceof NilExpr _arg) {
+                    yield _arg;
+                } else {
+                    throw new EvalException("invalid type for car expr");
+                }
+            }
+            case CdrExpr cdrExpr -> {
+                var arg = eval(cdrExpr.arg());
+                if (arg instanceof ConsExpr _arg) {
+                    yield _arg.cdr();
+                } else if (arg instanceof NilExpr _arg) {
+                    yield _arg;
+                } else {
+                    throw new EvalException("invalid type for car expr");
                 }
             }
             default -> throw new EvalException("invalid expr for eval");

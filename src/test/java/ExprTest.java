@@ -24,16 +24,16 @@ public class ExprTest {
         var tokens = Tokenizer.tokenize("(quote a)");
         var node = new Parser(tokens).parse();
         var actualExpr = Expr.from(node);
-        var expectedExpr = new QuoteExpr(new RefExpr("a"));
+        var expectedExpr = new QuoteExpr(new SymbolExpr("a"));
         assertEquals(expectedExpr, actualExpr);
     }
 
     @Test
     void getConsQuote() throws TokenizerException, ParserException {
-        var tokens = Tokenizer.tokenize("(quote (cons 1 #t))");
+        var tokens = Tokenizer.tokenize("(quote (1 #t))");
         var node = new Parser(tokens).parse();
         var actualExpr = Expr.from(node);
-        var expectedExpr = new QuoteExpr(new ConsExpr(new IntegerExpr(1), new BoolExpr(true)));
+        var expectedExpr = new QuoteExpr(new ConsExpr(new IntegerExpr(1), new ConsExpr(new BoolExpr(true), new NilExpr())));
         assertEquals(expectedExpr, actualExpr);
     }
 

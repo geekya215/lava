@@ -4,9 +4,7 @@ import io.geekya215.lava.Tokenizer;
 import io.geekya215.lava.exception.EvalException;
 import io.geekya215.lava.exception.ParserException;
 import io.geekya215.lava.exception.TokenizerException;
-import io.geekya215.lava.expr.BoolExpr;
-import io.geekya215.lava.expr.Expr;
-import io.geekya215.lava.expr.IntegerExpr;
+import io.geekya215.lava.expr.*;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -189,6 +187,66 @@ public class InterpreterTest {
         var expr = Expr.from(node);
         var actualResult = Interpreter.eval(expr);
         var expectedResult = new BoolExpr(true);
+        assertEquals(expectedResult, actualResult);
+    }
+
+    @Test
+    void getCar() throws TokenizerException, ParserException, EvalException {
+        var tokens = Tokenizer.tokenize("(car (quote (#t #f)))");
+        var node = new Parser(tokens).parse();
+        var expr = Expr.from(node);
+        var actualResult = Interpreter.eval(expr);
+        var expectedResult = new BoolExpr(true);
+        assertEquals(expectedResult, actualResult);
+    }
+
+    @Test
+    void getCdr() throws TokenizerException, ParserException, EvalException {
+        var tokens = Tokenizer.tokenize("(cdr (quote (#t #f)))");
+        var node = new Parser(tokens).parse();
+        var expr = Expr.from(node);
+        var actualResult = Interpreter.eval(expr);
+        var expectedResult = new ConsExpr(new BoolExpr(false), new NilExpr());
+        assertEquals(expectedResult, actualResult);
+    }
+
+    @Test
+    void getCdrCar() throws TokenizerException, ParserException, EvalException {
+        var tokens = Tokenizer.tokenize("(car (cdr (quote (#t #f))))");
+        var node = new Parser(tokens).parse();
+        var expr = Expr.from(node);
+        var actualResult = Interpreter.eval(expr);
+        var expectedResult = new BoolExpr(false);
+        assertEquals(expectedResult, actualResult);
+    }
+
+    @Test
+    void getCarNil() throws TokenizerException, ParserException, EvalException {
+        var tokens = Tokenizer.tokenize("(car (quote ()))");
+        var node = new Parser(tokens).parse();
+        var expr = Expr.from(node);
+        var actualResult = Interpreter.eval(expr);
+        var expectedResult = new NilExpr();
+        assertEquals(expectedResult, actualResult);
+    }
+
+    @Test
+    void getCdrNil() throws TokenizerException, ParserException, EvalException {
+        var tokens = Tokenizer.tokenize("(cdr (quote ()))");
+        var node = new Parser(tokens).parse();
+        var expr = Expr.from(node);
+        var actualResult = Interpreter.eval(expr);
+        var expectedResult = new NilExpr();
+        assertEquals(expectedResult, actualResult);
+    }
+
+    @Test
+    void getCons() throws TokenizerException, ParserException, EvalException {
+        var tokens = Tokenizer.tokenize("(cons (+ 1 2) (cdr (quote (#t #f))))");
+        var node = new Parser(tokens).parse();
+        var expr = Expr.from(node);
+        var actualResult = Interpreter.eval(expr);
+        var expectedResult = new ConsExpr(new IntegerExpr(3), new ConsExpr(new BoolExpr(false), new NilExpr()));
         assertEquals(expectedResult, actualResult);
     }
 }
