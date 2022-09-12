@@ -4,6 +4,7 @@ import io.geekya215.lava.Tokenizer;
 import io.geekya215.lava.exception.EvalException;
 import io.geekya215.lava.exception.ParserException;
 import io.geekya215.lava.exception.TokenizerException;
+import io.geekya215.lava.expr.BoolExpr;
 import io.geekya215.lava.expr.Expr;
 import io.geekya215.lava.expr.IntegerExpr;
 import org.junit.jupiter.api.Test;
@@ -68,6 +69,86 @@ public class InterpreterTest {
         var expr = Expr.from(node);
         var actualResult = Interpreter.eval(expr);
         var expectedResult = new IntegerExpr(7);
+        assertEquals(expectedResult, actualResult);
+    }
+
+    @Test
+    void OneEqualOne() throws TokenizerException, ParserException, EvalException {
+        var tokens = Tokenizer.tokenize("(= 1 1)");
+        var node = new Parser(tokens).parse();
+        var expr = Expr.from(node);
+        var actualResult = Interpreter.eval(expr);
+        var expectedResult = new BoolExpr(true);
+        assertEquals(expectedResult, actualResult);
+    }
+
+    @Test
+    void TrueEqualTrue() throws TokenizerException, ParserException, EvalException {
+        var tokens = Tokenizer.tokenize("(= #t #t)");
+        var node = new Parser(tokens).parse();
+        var expr = Expr.from(node);
+        var actualResult = Interpreter.eval(expr);
+        var expectedResult = new BoolExpr(true);
+        assertEquals(expectedResult, actualResult);
+    }
+
+    @Test
+    void OneLessThanTwo() throws TokenizerException, ParserException, EvalException {
+        var tokens = Tokenizer.tokenize("(< 1 2)");
+        var node = new Parser(tokens).parse();
+        var expr = Expr.from(node);
+        var actualResult = Interpreter.eval(expr);
+        var expectedResult = new BoolExpr(true);
+        assertEquals(expectedResult, actualResult);
+    }
+
+    @Test
+    void TwoGreaterThanOne() throws TokenizerException, ParserException, EvalException {
+        var tokens = Tokenizer.tokenize("(> 2 1)");
+        var node = new Parser(tokens).parse();
+        var expr = Expr.from(node);
+        var actualResult = Interpreter.eval(expr);
+        var expectedResult = new BoolExpr(true);
+        assertEquals(expectedResult, actualResult);
+    }
+
+    @Test
+    void TwoLessThanOrEqualTwo() throws TokenizerException, ParserException, EvalException {
+        var tokens = Tokenizer.tokenize("(<= 2 2)");
+        var node = new Parser(tokens).parse();
+        var expr = Expr.from(node);
+        var actualResult = Interpreter.eval(expr);
+        var expectedResult = new BoolExpr(true);
+        assertEquals(expectedResult, actualResult);
+    }
+
+    @Test
+    void OneLessThanOrEqualTwo() throws TokenizerException, ParserException, EvalException {
+        var tokens = Tokenizer.tokenize("(<= 1 2)");
+        var node = new Parser(tokens).parse();
+        var expr = Expr.from(node);
+        var actualResult = Interpreter.eval(expr);
+        var expectedResult = new BoolExpr(true);
+        assertEquals(expectedResult, actualResult);
+    }
+
+    @Test
+    void ThreeGreaterThanOrEqualThree() throws TokenizerException, ParserException, EvalException {
+        var tokens = Tokenizer.tokenize("(>= 3 3)");
+        var node = new Parser(tokens).parse();
+        var expr = Expr.from(node);
+        var actualResult = Interpreter.eval(expr);
+        var expectedResult = new BoolExpr(true);
+        assertEquals(expectedResult, actualResult);
+    }
+
+    @Test
+    void FourGreaterThanOrEqualThree() throws TokenizerException, ParserException, EvalException {
+        var tokens = Tokenizer.tokenize("(>= 4 3)");
+        var node = new Parser(tokens).parse();
+        var expr = Expr.from(node);
+        var actualResult = Interpreter.eval(expr);
+        var expectedResult = new BoolExpr(true);
         assertEquals(expectedResult, actualResult);
     }
 }
