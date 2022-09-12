@@ -155,6 +155,18 @@ public class Interpreter {
                     throw new EvalException("invalid type for car expr");
                 }
             }
+            case IfExpr ifExpr -> {
+                var cond = eval(ifExpr.cond());
+                if (cond instanceof BoolExpr _cond) {
+                    if (_cond.value()) {
+                        yield eval(ifExpr.trueBranch());
+                    } else {
+                        yield eval(ifExpr.falseBranch());
+                    }
+                } else {
+                    throw new EvalException("invalid type for if expr");
+                }
+            }
             default -> throw new EvalException("invalid expr for eval");
         };
     }

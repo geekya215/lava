@@ -249,4 +249,24 @@ public class InterpreterTest {
         var expectedResult = new ConsExpr(new IntegerExpr(3), new ConsExpr(new BoolExpr(false), new NilExpr()));
         assertEquals(expectedResult, actualResult);
     }
+
+    @Test
+    void getIfTrueBranch() throws TokenizerException, ParserException, EvalException {
+        var tokens = Tokenizer.tokenize("(if (< 1 2) 1 2)");
+        var node = new Parser(tokens).parse();
+        var expr = Expr.from(node);
+        var actualResult = Interpreter.eval(expr);
+        var expectedResult = new IntegerExpr(1);
+        assertEquals(expectedResult, actualResult);
+    }
+
+    @Test
+    void getIfFalseBranch() throws TokenizerException, ParserException, EvalException {
+        var tokens = Tokenizer.tokenize("(if (> 1 2) 1 2)");
+        var node = new Parser(tokens).parse();
+        var expr = Expr.from(node);
+        var actualResult = Interpreter.eval(expr);
+        var expectedResult = new IntegerExpr(2);
+        assertEquals(expectedResult, actualResult);
+    }
 }
