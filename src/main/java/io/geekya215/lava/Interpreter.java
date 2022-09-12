@@ -93,6 +93,41 @@ public class Interpreter {
                     throw new EvalException("invalid type for gteq expr");
                 }
             }
+            case NotExpr notExpr -> {
+                var arg = eval(notExpr.arg());
+                if (arg instanceof BoolExpr _arg) {
+                    yield new BoolExpr(!_arg.value());
+                } else {
+                    throw new EvalException("invalid type for not expr");
+                }
+            }
+            case AndExpr andExpr -> {
+                var left = eval(andExpr.left());
+                var right = eval(andExpr.right());
+                if (left instanceof BoolExpr _l && right instanceof BoolExpr _r) {
+                    yield new BoolExpr(_l.value() && _r.value());
+                } else {
+                    throw new EvalException("invalid type for and expr");
+                }
+            }
+            case OrExpr orExpr -> {
+                var left = eval(orExpr.left());
+                var right = eval(orExpr.right());
+                if (left instanceof BoolExpr _l && right instanceof BoolExpr _r) {
+                    yield new BoolExpr(_l.value() || _r.value());
+                } else {
+                    throw new EvalException("invalid type for or expr");
+                }
+            }
+            case XorExpr xorExpr -> {
+                var left = eval(xorExpr.left());
+                var right = eval(xorExpr.right());
+                if (left instanceof BoolExpr _l && right instanceof BoolExpr _r) {
+                    yield new BoolExpr(_l.value() ^ _r.value());
+                } else {
+                    throw new EvalException("invalid type for xor expr");
+                }
+            }
             default -> throw new EvalException("invalid expr for eval");
         };
     }

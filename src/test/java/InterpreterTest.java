@@ -151,4 +151,44 @@ public class InterpreterTest {
         var expectedResult = new BoolExpr(true);
         assertEquals(expectedResult, actualResult);
     }
+
+    @Test
+    void NotTrueEqualFalse() throws TokenizerException, ParserException, EvalException {
+        var tokens = Tokenizer.tokenize("(not (= 1 1))");
+        var node = new Parser(tokens).parse();
+        var expr = Expr.from(node);
+        var actualResult = Interpreter.eval(expr);
+        var expectedResult = new BoolExpr(false);
+        assertEquals(expectedResult, actualResult);
+    }
+
+    @Test
+    void TrueAndFalseEqualFalse() throws TokenizerException, ParserException, EvalException {
+        var tokens = Tokenizer.tokenize("(and (= 1 1) (= 1 2))");
+        var node = new Parser(tokens).parse();
+        var expr = Expr.from(node);
+        var actualResult = Interpreter.eval(expr);
+        var expectedResult = new BoolExpr(false);
+        assertEquals(expectedResult, actualResult);
+    }
+
+    @Test
+    void TrueOrFalseEqualTrue() throws TokenizerException, ParserException, EvalException {
+        var tokens = Tokenizer.tokenize("(or (= 1 1) (= 1 2))");
+        var node = new Parser(tokens).parse();
+        var expr = Expr.from(node);
+        var actualResult = Interpreter.eval(expr);
+        var expectedResult = new BoolExpr(true);
+        assertEquals(expectedResult, actualResult);
+    }
+
+    @Test
+    void TrueXorFalseEqualTrue() throws TokenizerException, ParserException, EvalException {
+        var tokens = Tokenizer.tokenize("(xor (= 1 1) (= 1 2))");
+        var node = new Parser(tokens).parse();
+        var expr = Expr.from(node);
+        var actualResult = Interpreter.eval(expr);
+        var expectedResult = new BoolExpr(true);
+        assertEquals(expectedResult, actualResult);
+    }
 }
