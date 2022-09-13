@@ -4,20 +4,20 @@ import io.geekya215.lava.exception.EvalException;
 import io.geekya215.lava.expr.*;
 
 public class Interpreter {
-    public static Expr eval(Expr expr) throws EvalException {
+    public static Expr eval(Expr expr, Env env) throws EvalException {
         return switch (expr) {
             case IntegerExpr integerExpr -> integerExpr;
             case BoolExpr boolExpr -> boolExpr;
             case NilExpr nilExpr -> nilExpr;
             case ConsExpr consExpr -> {
-                var car = eval(consExpr.car());
-                var cdr = eval(consExpr.cdr());
+                var car = eval(consExpr.car(), env);
+                var cdr = eval(consExpr.cdr(), env);
                 yield new ConsExpr(car, cdr);
             }
             case QuoteExpr quoteExpr -> quoteExpr.arg();
             case PlusExpr plusExpr -> {
-                var left = eval(plusExpr.left());
-                var right = eval(plusExpr.right());
+                var left = eval(plusExpr.left(), env);
+                var right = eval(plusExpr.right(), env);
                 if (left instanceof IntegerExpr _l && right instanceof IntegerExpr _r) {
                     yield new IntegerExpr(_l.value() + _r.value());
                 } else {
@@ -25,8 +25,8 @@ public class Interpreter {
                 }
             }
             case MinusExpr minusExpr -> {
-                var left = eval(minusExpr.left());
-                var right = eval(minusExpr.right());
+                var left = eval(minusExpr.left(), env);
+                var right = eval(minusExpr.right(), env);
                 if (left instanceof IntegerExpr _l && right instanceof IntegerExpr _r) {
                     yield new IntegerExpr(_l.value() - _r.value());
                 } else {
@@ -34,8 +34,8 @@ public class Interpreter {
                 }
             }
             case MulExpr mulExpr -> {
-                var left = eval(mulExpr.left());
-                var right = eval(mulExpr.right());
+                var left = eval(mulExpr.left(), env);
+                var right = eval(mulExpr.right(), env);
                 if (left instanceof IntegerExpr _l && right instanceof IntegerExpr _r) {
                     yield new IntegerExpr(_l.value() * _r.value());
                 } else {
@@ -43,8 +43,8 @@ public class Interpreter {
                 }
             }
             case DivExpr divExpr -> {
-                var left = eval(divExpr.left());
-                var right = eval(divExpr.right());
+                var left = eval(divExpr.left(), env);
+                var right = eval(divExpr.right(), env);
                 if (left instanceof IntegerExpr _l && right instanceof IntegerExpr _r) {
                     yield new IntegerExpr(_l.value() / _r.value());
                 } else {
@@ -52,8 +52,8 @@ public class Interpreter {
                 }
             }
             case EqExpr eqExpr -> {
-                var left = eval(eqExpr.left());
-                var right = eval(eqExpr.right());
+                var left = eval(eqExpr.left(), env);
+                var right = eval(eqExpr.right(), env);
                 // Todo
                 // only support integer and bool, will support other types in the future.
                 if (left instanceof IntegerExpr _l && right instanceof IntegerExpr _r) {
@@ -65,8 +65,8 @@ public class Interpreter {
                 }
             }
             case LtExpr ltExpr -> {
-                var left = eval(ltExpr.left());
-                var right = eval(ltExpr.right());
+                var left = eval(ltExpr.left(), env);
+                var right = eval(ltExpr.right(), env);
                 if (left instanceof IntegerExpr _l && right instanceof IntegerExpr _r) {
                     yield new BoolExpr(_l.value() < _r.value());
                 } else {
@@ -74,8 +74,8 @@ public class Interpreter {
                 }
             }
             case GtExpr gtExpr -> {
-                var left = eval(gtExpr.left());
-                var right = eval(gtExpr.right());
+                var left = eval(gtExpr.left(), env);
+                var right = eval(gtExpr.right(), env);
                 if (left instanceof IntegerExpr _l && right instanceof IntegerExpr _r) {
                     yield new BoolExpr(_l.value() > _r.value());
                 } else {
@@ -83,8 +83,8 @@ public class Interpreter {
                 }
             }
             case LtEqExpr ltEqExpr -> {
-                var left = eval(ltEqExpr.left());
-                var right = eval(ltEqExpr.right());
+                var left = eval(ltEqExpr.left(), env);
+                var right = eval(ltEqExpr.right(), env);
                 if (left instanceof IntegerExpr _l && right instanceof IntegerExpr _r) {
                     yield new BoolExpr(_l.value() <= _r.value());
                 } else {
@@ -92,8 +92,8 @@ public class Interpreter {
                 }
             }
             case GtEqExpr gtEqExpr -> {
-                var left = eval(gtEqExpr.left());
-                var right = eval(gtEqExpr.right());
+                var left = eval(gtEqExpr.left(), env);
+                var right = eval(gtEqExpr.right(), env);
                 if (left instanceof IntegerExpr _l && right instanceof IntegerExpr _r) {
                     yield new BoolExpr(_l.value() >= _r.value());
                 } else {
@@ -101,7 +101,7 @@ public class Interpreter {
                 }
             }
             case NotExpr notExpr -> {
-                var arg = eval(notExpr.arg());
+                var arg = eval(notExpr.arg(), env);
                 if (arg instanceof BoolExpr _arg) {
                     yield new BoolExpr(!_arg.value());
                 } else {
@@ -109,8 +109,8 @@ public class Interpreter {
                 }
             }
             case AndExpr andExpr -> {
-                var left = eval(andExpr.left());
-                var right = eval(andExpr.right());
+                var left = eval(andExpr.left(), env);
+                var right = eval(andExpr.right(), env);
                 if (left instanceof BoolExpr _l && right instanceof BoolExpr _r) {
                     yield new BoolExpr(_l.value() && _r.value());
                 } else {
@@ -118,8 +118,8 @@ public class Interpreter {
                 }
             }
             case OrExpr orExpr -> {
-                var left = eval(orExpr.left());
-                var right = eval(orExpr.right());
+                var left = eval(orExpr.left(), env);
+                var right = eval(orExpr.right(), env);
                 if (left instanceof BoolExpr _l && right instanceof BoolExpr _r) {
                     yield new BoolExpr(_l.value() || _r.value());
                 } else {
@@ -127,8 +127,8 @@ public class Interpreter {
                 }
             }
             case XorExpr xorExpr -> {
-                var left = eval(xorExpr.left());
-                var right = eval(xorExpr.right());
+                var left = eval(xorExpr.left(), env);
+                var right = eval(xorExpr.right(), env);
                 if (left instanceof BoolExpr _l && right instanceof BoolExpr _r) {
                     yield new BoolExpr(_l.value() ^ _r.value());
                 } else {
@@ -136,7 +136,7 @@ public class Interpreter {
                 }
             }
             case CarExpr carExpr -> {
-                var arg = eval(carExpr.arg());
+                var arg = eval(carExpr.arg(), env);
                 if (arg instanceof ConsExpr _arg) {
                     yield _arg.car();
                 } else if (arg instanceof NilExpr _arg) {
@@ -146,7 +146,7 @@ public class Interpreter {
                 }
             }
             case CdrExpr cdrExpr -> {
-                var arg = eval(cdrExpr.arg());
+                var arg = eval(cdrExpr.arg(), env);
                 if (arg instanceof ConsExpr _arg) {
                     yield _arg.cdr();
                 } else if (arg instanceof NilExpr _arg) {
@@ -156,15 +156,30 @@ public class Interpreter {
                 }
             }
             case IfExpr ifExpr -> {
-                var cond = eval(ifExpr.cond());
+                var cond = eval(ifExpr.cond(), env);
                 if (cond instanceof BoolExpr _cond) {
                     if (_cond.value()) {
-                        yield eval(ifExpr.trueBranch());
+                        yield eval(ifExpr.trueBranch(), env);
                     } else {
-                        yield eval(ifExpr.falseBranch());
+                        yield eval(ifExpr.falseBranch(), env);
                     }
                 } else {
                     throw new EvalException("invalid type for if expr");
+                }
+            }
+            case DefineExpr defineExpr -> {
+                var id = defineExpr.id();
+                var var = eval(defineExpr.var(), env);
+                env.set(id, var);
+                yield var;
+            }
+            case RefExpr refExpr -> {
+                var id = refExpr.id();
+                var var = env.get(id);
+                if (var.isPresent()) {
+                    yield var.get();
+                } else {
+                    throw new EvalException("attempted to access undefined variable: " + id);
                 }
             }
             default -> throw new EvalException("invalid expr for eval");

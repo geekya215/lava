@@ -1,3 +1,4 @@
+import io.geekya215.lava.Env;
 import io.geekya215.lava.Interpreter;
 import io.geekya215.lava.Parser;
 import io.geekya215.lava.Tokenizer;
@@ -15,7 +16,7 @@ public class InterpreterTest {
         var tokens = Tokenizer.tokenize("1");
         var node = new Parser(tokens).parse();
         var expr = Expr.from(node);
-        var actualResult = Interpreter.eval(expr);
+        var actualResult = Interpreter.eval(expr, new Env());
         var expectedResult = new IntegerExpr(1);
         assertEquals(expectedResult, actualResult);
     }
@@ -25,7 +26,7 @@ public class InterpreterTest {
         var tokens = Tokenizer.tokenize("(+ 1 2)");
         var node = new Parser(tokens).parse();
         var expr = Expr.from(node);
-        var actualResult = Interpreter.eval(expr);
+        var actualResult = Interpreter.eval(expr, new Env());
         var expectedResult = new IntegerExpr(3);
         assertEquals(expectedResult, actualResult);
     }
@@ -35,7 +36,7 @@ public class InterpreterTest {
         var tokens = Tokenizer.tokenize("(- 1 2)");
         var node = new Parser(tokens).parse();
         var expr = Expr.from(node);
-        var actualResult = Interpreter.eval(expr);
+        var actualResult = Interpreter.eval(expr, new Env());
         var expectedResult = new IntegerExpr(-1);
         assertEquals(expectedResult, actualResult);
     }
@@ -45,7 +46,7 @@ public class InterpreterTest {
         var tokens = Tokenizer.tokenize("(* 1 2)");
         var node = new Parser(tokens).parse();
         var expr = Expr.from(node);
-        var actualResult = Interpreter.eval(expr);
+        var actualResult = Interpreter.eval(expr, new Env());
         var expectedResult = new IntegerExpr(2);
         assertEquals(expectedResult, actualResult);
     }
@@ -55,7 +56,7 @@ public class InterpreterTest {
         var tokens = Tokenizer.tokenize("(/ 1 2)");
         var node = new Parser(tokens).parse();
         var expr = Expr.from(node);
-        var actualResult = Interpreter.eval(expr);
+        var actualResult = Interpreter.eval(expr, new Env());
         var expectedResult = new IntegerExpr(0);
         assertEquals(expectedResult, actualResult);
     }
@@ -65,7 +66,7 @@ public class InterpreterTest {
         var tokens = Tokenizer.tokenize("(+ 1 (* 2 3))");
         var node = new Parser(tokens).parse();
         var expr = Expr.from(node);
-        var actualResult = Interpreter.eval(expr);
+        var actualResult = Interpreter.eval(expr, new Env());
         var expectedResult = new IntegerExpr(7);
         assertEquals(expectedResult, actualResult);
     }
@@ -75,7 +76,7 @@ public class InterpreterTest {
         var tokens = Tokenizer.tokenize("(= 1 1)");
         var node = new Parser(tokens).parse();
         var expr = Expr.from(node);
-        var actualResult = Interpreter.eval(expr);
+        var actualResult = Interpreter.eval(expr, new Env());
         var expectedResult = new BoolExpr(true);
         assertEquals(expectedResult, actualResult);
     }
@@ -85,7 +86,7 @@ public class InterpreterTest {
         var tokens = Tokenizer.tokenize("(= #t #t)");
         var node = new Parser(tokens).parse();
         var expr = Expr.from(node);
-        var actualResult = Interpreter.eval(expr);
+        var actualResult = Interpreter.eval(expr, new Env());
         var expectedResult = new BoolExpr(true);
         assertEquals(expectedResult, actualResult);
     }
@@ -95,7 +96,7 @@ public class InterpreterTest {
         var tokens = Tokenizer.tokenize("(< 1 2)");
         var node = new Parser(tokens).parse();
         var expr = Expr.from(node);
-        var actualResult = Interpreter.eval(expr);
+        var actualResult = Interpreter.eval(expr, new Env());
         var expectedResult = new BoolExpr(true);
         assertEquals(expectedResult, actualResult);
     }
@@ -105,7 +106,7 @@ public class InterpreterTest {
         var tokens = Tokenizer.tokenize("(> 2 1)");
         var node = new Parser(tokens).parse();
         var expr = Expr.from(node);
-        var actualResult = Interpreter.eval(expr);
+        var actualResult = Interpreter.eval(expr, new Env());
         var expectedResult = new BoolExpr(true);
         assertEquals(expectedResult, actualResult);
     }
@@ -115,7 +116,7 @@ public class InterpreterTest {
         var tokens = Tokenizer.tokenize("(<= 2 2)");
         var node = new Parser(tokens).parse();
         var expr = Expr.from(node);
-        var actualResult = Interpreter.eval(expr);
+        var actualResult = Interpreter.eval(expr, new Env());
         var expectedResult = new BoolExpr(true);
         assertEquals(expectedResult, actualResult);
     }
@@ -125,7 +126,7 @@ public class InterpreterTest {
         var tokens = Tokenizer.tokenize("(<= 1 2)");
         var node = new Parser(tokens).parse();
         var expr = Expr.from(node);
-        var actualResult = Interpreter.eval(expr);
+        var actualResult = Interpreter.eval(expr, new Env());
         var expectedResult = new BoolExpr(true);
         assertEquals(expectedResult, actualResult);
     }
@@ -135,7 +136,7 @@ public class InterpreterTest {
         var tokens = Tokenizer.tokenize("(>= 3 3)");
         var node = new Parser(tokens).parse();
         var expr = Expr.from(node);
-        var actualResult = Interpreter.eval(expr);
+        var actualResult = Interpreter.eval(expr, new Env());
         var expectedResult = new BoolExpr(true);
         assertEquals(expectedResult, actualResult);
     }
@@ -145,7 +146,7 @@ public class InterpreterTest {
         var tokens = Tokenizer.tokenize("(>= 4 3)");
         var node = new Parser(tokens).parse();
         var expr = Expr.from(node);
-        var actualResult = Interpreter.eval(expr);
+        var actualResult = Interpreter.eval(expr, new Env());
         var expectedResult = new BoolExpr(true);
         assertEquals(expectedResult, actualResult);
     }
@@ -155,7 +156,7 @@ public class InterpreterTest {
         var tokens = Tokenizer.tokenize("(not (= 1 1))");
         var node = new Parser(tokens).parse();
         var expr = Expr.from(node);
-        var actualResult = Interpreter.eval(expr);
+        var actualResult = Interpreter.eval(expr, new Env());
         var expectedResult = new BoolExpr(false);
         assertEquals(expectedResult, actualResult);
     }
@@ -165,7 +166,7 @@ public class InterpreterTest {
         var tokens = Tokenizer.tokenize("(and (= 1 1) (= 1 2))");
         var node = new Parser(tokens).parse();
         var expr = Expr.from(node);
-        var actualResult = Interpreter.eval(expr);
+        var actualResult = Interpreter.eval(expr, new Env());
         var expectedResult = new BoolExpr(false);
         assertEquals(expectedResult, actualResult);
     }
@@ -175,7 +176,7 @@ public class InterpreterTest {
         var tokens = Tokenizer.tokenize("(or (= 1 1) (= 1 2))");
         var node = new Parser(tokens).parse();
         var expr = Expr.from(node);
-        var actualResult = Interpreter.eval(expr);
+        var actualResult = Interpreter.eval(expr, new Env());
         var expectedResult = new BoolExpr(true);
         assertEquals(expectedResult, actualResult);
     }
@@ -185,7 +186,7 @@ public class InterpreterTest {
         var tokens = Tokenizer.tokenize("(xor (= 1 1) (= 1 2))");
         var node = new Parser(tokens).parse();
         var expr = Expr.from(node);
-        var actualResult = Interpreter.eval(expr);
+        var actualResult = Interpreter.eval(expr, new Env());
         var expectedResult = new BoolExpr(true);
         assertEquals(expectedResult, actualResult);
     }
@@ -195,7 +196,7 @@ public class InterpreterTest {
         var tokens = Tokenizer.tokenize("(car (quote (#t #f)))");
         var node = new Parser(tokens).parse();
         var expr = Expr.from(node);
-        var actualResult = Interpreter.eval(expr);
+        var actualResult = Interpreter.eval(expr, new Env());
         var expectedResult = new BoolExpr(true);
         assertEquals(expectedResult, actualResult);
     }
@@ -205,7 +206,7 @@ public class InterpreterTest {
         var tokens = Tokenizer.tokenize("(cdr (quote (#t #f)))");
         var node = new Parser(tokens).parse();
         var expr = Expr.from(node);
-        var actualResult = Interpreter.eval(expr);
+        var actualResult = Interpreter.eval(expr, new Env());
         var expectedResult = new ConsExpr(new BoolExpr(false), new NilExpr());
         assertEquals(expectedResult, actualResult);
     }
@@ -215,7 +216,7 @@ public class InterpreterTest {
         var tokens = Tokenizer.tokenize("(car (cdr (quote (#t #f))))");
         var node = new Parser(tokens).parse();
         var expr = Expr.from(node);
-        var actualResult = Interpreter.eval(expr);
+        var actualResult = Interpreter.eval(expr, new Env());
         var expectedResult = new BoolExpr(false);
         assertEquals(expectedResult, actualResult);
     }
@@ -225,7 +226,7 @@ public class InterpreterTest {
         var tokens = Tokenizer.tokenize("(car (quote ()))");
         var node = new Parser(tokens).parse();
         var expr = Expr.from(node);
-        var actualResult = Interpreter.eval(expr);
+        var actualResult = Interpreter.eval(expr, new Env());
         var expectedResult = new NilExpr();
         assertEquals(expectedResult, actualResult);
     }
@@ -235,7 +236,7 @@ public class InterpreterTest {
         var tokens = Tokenizer.tokenize("(cdr (quote ()))");
         var node = new Parser(tokens).parse();
         var expr = Expr.from(node);
-        var actualResult = Interpreter.eval(expr);
+        var actualResult = Interpreter.eval(expr, new Env());
         var expectedResult = new NilExpr();
         assertEquals(expectedResult, actualResult);
     }
@@ -245,7 +246,7 @@ public class InterpreterTest {
         var tokens = Tokenizer.tokenize("(cons (+ 1 2) (cdr (quote (#t #f))))");
         var node = new Parser(tokens).parse();
         var expr = Expr.from(node);
-        var actualResult = Interpreter.eval(expr);
+        var actualResult = Interpreter.eval(expr, new Env());
         var expectedResult = new ConsExpr(new IntegerExpr(3), new ConsExpr(new BoolExpr(false), new NilExpr()));
         assertEquals(expectedResult, actualResult);
     }
@@ -255,7 +256,7 @@ public class InterpreterTest {
         var tokens = Tokenizer.tokenize("(if (< 1 2) 1 2)");
         var node = new Parser(tokens).parse();
         var expr = Expr.from(node);
-        var actualResult = Interpreter.eval(expr);
+        var actualResult = Interpreter.eval(expr, new Env());
         var expectedResult = new IntegerExpr(1);
         assertEquals(expectedResult, actualResult);
     }
@@ -265,8 +266,33 @@ public class InterpreterTest {
         var tokens = Tokenizer.tokenize("(if (> 1 2) 1 2)");
         var node = new Parser(tokens).parse();
         var expr = Expr.from(node);
-        var actualResult = Interpreter.eval(expr);
+        var actualResult = Interpreter.eval(expr, new Env());
         var expectedResult = new IntegerExpr(2);
+        assertEquals(expectedResult, actualResult);
+    }
+
+    @Test
+    void defineAEqualOne() throws TokenizerException, ParserException, EvalException {
+        var tokens = Tokenizer.tokenize("(define a 1)");
+        var node = new Parser(tokens).parse();
+        var expr = Expr.from(node);
+        var actualResult = Interpreter.eval(expr, new Env());
+        var expectedResult = new IntegerExpr(1);
+        assertEquals(expectedResult, actualResult);
+    }
+
+    @Test
+    void defineAEqualOneAndAccess() throws TokenizerException, ParserException, EvalException {
+        var tokens1 = Tokenizer.tokenize("(define a (quote (1 2 3)))");
+        var node1 = new Parser(tokens1).parse();
+        var expr1 = Expr.from(node1);
+        var env = new Env();
+        Interpreter.eval(expr1, env);
+        var tokens = Tokenizer.tokenize("(+ 1 (car (cdr a)))");
+        var node = new Parser(tokens).parse();
+        var expr = Expr.from(node);
+        var actualResult = Interpreter.eval(expr, env);
+        var expectedResult = new IntegerExpr(3);
         assertEquals(expectedResult, actualResult);
     }
 }

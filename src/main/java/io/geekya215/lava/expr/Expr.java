@@ -6,7 +6,7 @@ import io.geekya215.lava.nodes.*;
 import java.util.ArrayList;
 
 public sealed interface Expr permits
-    RefExpr, LambdaExpr, AppExpr,
+    RefExpr, LambdaExpr, AppExpr, DefineExpr,
     BoolExpr, IfExpr,
     EqExpr, LtExpr, LtEqExpr, GtExpr, GtEqExpr,
     NotExpr, AndExpr, OrExpr, XorExpr,
@@ -54,6 +54,13 @@ public sealed interface Expr permits
                                 case "and" -> new AndExpr(from(car), from(cdr));
                                 case "or" -> new OrExpr(from(car), from(cdr));
                                 case "xor" -> new XorExpr(from(car), from(cdr));
+                                case "define" -> {
+                                    if (car instanceof SymbolNode id) {
+                                        yield new DefineExpr(id.val(), from(cdr));
+                                    } else {
+                                        throw new ParserException("invalid define expr");
+                                    }
+                                }
                                 case "lambda" -> {
                                     var params = new ArrayList<String>();
                                     for (var p : car.toList()) {
