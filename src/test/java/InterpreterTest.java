@@ -295,4 +295,54 @@ public class InterpreterTest {
         var expectedResult = new IntegerExpr(3);
         assertEquals(expectedResult, actualResult);
     }
+
+    @Test
+    void defineMaxFunction() throws TokenizerException, ParserException, EvalException {
+        var tokens1 = Tokenizer.tokenize("""
+            (define max (lambda (a b)
+                                (if (< a b)
+                                    b
+                                    a)))""");
+        var node1 = new Parser(tokens1).parse();
+        var expr1 = Expr.from(node1);
+        var env = new Env();
+        Interpreter.eval(expr1, env);
+        var tokens = Tokenizer.tokenize("(max 2 3)");
+        var node = new Parser(tokens).parse();
+        var expr = Expr.from(node);
+        var actualResult = Interpreter.eval(expr, env);
+        var expectedResult = new IntegerExpr(3);
+        assertEquals(expectedResult, actualResult);
+    }
+
+    @Test
+    void IIFE() throws TokenizerException, ParserException, EvalException {
+        var tokens = Tokenizer.tokenize("((lambda () 1))");
+        var node = new Parser(tokens).parse();
+        var expr = Expr.from(node);
+        var actualResult = Interpreter.eval(expr, new Env());
+        var expectedResult = new IntegerExpr(1);
+        assertEquals(expectedResult, actualResult);
+    }
+
+    @Test
+    void FibFunction() throws TokenizerException, ParserException, EvalException {
+        var tokens1 = Tokenizer.tokenize("""
+            (define fact (lambda (n)
+                                 (if (<= n 1)
+                                     1
+                                     (* n
+                                        (fact (- n 1))))))"""
+        );
+        var node1 = new Parser(tokens1).parse();
+        var expr1 = Expr.from(node1);
+        var env = new Env();
+        Interpreter.eval(expr1, env);
+        var tokens = Tokenizer.tokenize("(fact 5)");
+        var node = new Parser(tokens).parse();
+        var expr = Expr.from(node);
+        var actualResult = Interpreter.eval(expr, env);
+        var expectedResult = new IntegerExpr(120);
+        assertEquals(expectedResult, actualResult);
+    }
 }

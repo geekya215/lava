@@ -182,6 +182,26 @@ public class Interpreter {
                     throw new EvalException("attempted to access undefined variable: " + id);
                 }
             }
+            case AppExpr appExpr -> {
+                var fun = eval(appExpr.fun(), env);
+                if (fun instanceof LambdaExpr _fun) {
+                    var args = appExpr.args();
+                    var params = _fun.params();
+                    if (args.size() != params.size()) {
+                        throw new EvalException(String.format("called function with %d argument(s), expected %d argument(s)", args.size(), params.size()));
+                    } else {
+                        var newEnv = Env.extend(env);
+                        for (int i = 0; i < args.size(); i++) {
+                            var arg = eval(args.get(i), env);
+                            newEnv.set(params.get(i), arg);
+                        }
+                        yield eval(_fun.body(), newEnv);
+                    }
+                } else {
+                    throw new EvalException("invalid function call");
+                }
+            }
+            case LambdaExpr lambdaExpr -> lambdaExpr;
             default -> throw new EvalException("invalid expr for eval");
         };
     }

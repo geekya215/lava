@@ -23,73 +23,71 @@ public sealed interface Expr permits
             case ConsNode consNode -> {
                 var nodes = consNode.toList();
                 var size = nodes.size();
-                if (size < 2) {
-                    throw new ParserException("unexpected S-expression: " + sexpr);
-                } else {
-                    var head = nodes.get(0);
-                    if (head instanceof SymbolNode symbolNode) {
-                        if (size == 2) {
-                            var arg = nodes.get(1);
-                            yield switch (symbolNode.val()) {
-                                case "car" -> new CarExpr(from(arg));
-                                case "cdr" -> new CdrExpr(from(arg));
-                                case "quote" -> new QuoteExpr(buildQuote(arg));
-                                case "not" -> new NotExpr(from(arg));
-                                default -> buildApplication(consNode);
-                            };
-                        } else if (size == 3) {
-                            var car = nodes.get(1);
-                            var cdr = nodes.get(2);
-                            yield switch (symbolNode.val()) {
-                                case "cons" -> new ConsExpr(from(car), from(cdr));
-                                case "+" -> new PlusExpr(from(car), from(cdr));
-                                case "-" -> new MinusExpr(from(car), from(cdr));
-                                case "*" -> new MulExpr(from(car), from(cdr));
-                                case "/" -> new DivExpr(from(car), from(cdr));
-                                case "=" -> new EqExpr(from(car), from(cdr));
-                                case "<" -> new LtExpr(from(car), from(cdr));
-                                case ">" -> new GtExpr(from(car), from(cdr));
-                                case "<=" -> new LtEqExpr(from(car), from(cdr));
-                                case ">=" -> new GtEqExpr(from(car), from(cdr));
-                                case "and" -> new AndExpr(from(car), from(cdr));
-                                case "or" -> new OrExpr(from(car), from(cdr));
-                                case "xor" -> new XorExpr(from(car), from(cdr));
-                                case "define" -> {
-                                    if (car instanceof SymbolNode id) {
-                                        yield new DefineExpr(id.val(), from(cdr));
+                var head = nodes.get(0);
+                if (head instanceof SymbolNode symbolNode) {
+                    if (size == 2) {
+                        var arg = nodes.get(1);
+                        yield switch (symbolNode.val()) {
+                            case "car" -> new CarExpr(from(arg));
+                            case "cdr" -> new CdrExpr(from(arg));
+                            case "quote" -> new QuoteExpr(buildQuote(arg));
+                            case "not" -> new NotExpr(from(arg));
+                            default -> buildApplication(consNode);
+                        };
+                    } else if (size == 3) {
+                        var car = nodes.get(1);
+                        var cdr = nodes.get(2);
+                        yield switch (symbolNode.val()) {
+                            case "cons" -> new ConsExpr(from(car), from(cdr));
+                            case "+" -> new PlusExpr(from(car), from(cdr));
+                            case "-" -> new MinusExpr(from(car), from(cdr));
+                            case "*" -> new MulExpr(from(car), from(cdr));
+                            case "/" -> new DivExpr(from(car), from(cdr));
+                            case "=" -> new EqExpr(from(car), from(cdr));
+                            case "<" -> new LtExpr(from(car), from(cdr));
+                            case ">" -> new GtExpr(from(car), from(cdr));
+                            case "<=" -> new LtEqExpr(from(car), from(cdr));
+                            case ">=" -> new GtEqExpr(from(car), from(cdr));
+                            case "and" -> new AndExpr(from(car), from(cdr));
+                            case "or" -> new OrExpr(from(car), from(cdr));
+                            case "xor" -> new XorExpr(from(car), from(cdr));
+                            case "define" -> {
+                                if (car instanceof SymbolNode id) {
+                                    yield new DefineExpr(id.val(), from(cdr));
+                                } else {
+                                    throw new ParserException("invalid define expr");
+                                }
+                            }
+                            case "lambda" -> {
+                                var params = new ArrayList<String>();
+                                for (var p : car.toList()) {
+                                    if (p instanceof SymbolNode sym) {
+                                        params.add(sym.val());
                                     } else {
-                                        throw new ParserException("invalid define expr");
+                                        throw new ParserException("invalid parameter: " + p);
                                     }
                                 }
-                                case "lambda" -> {
-                                    var params = new ArrayList<String>();
-                                    for (var p : car.toList()) {
-                                        if (p instanceof SymbolNode sym) {
-                                            params.add(sym.val());
-                                        } else {
-                                            throw new ParserException("invalid parameter: " + p);
-                                        }
-                                    }
-                                    yield new LambdaExpr(params, from(cdr));
-                                }
-                                default -> buildApplication(consNode);
-                            };
-                        } else if (size == 4) {
-                            yield switch (symbolNode.val()) {
-                                case "if" -> {
-                                    var cond = nodes.get(1);
-                                    var trueBranch = nodes.get(2);
-                                    var falseBranch = nodes.get(3);
-                                    yield new IfExpr(from(cond), from(trueBranch), from(falseBranch));
-                                }
-                                default -> buildApplication(consNode);
-                            };
-                        } else {
-                            yield buildApplication(consNode);
-                        }
+                                yield new LambdaExpr(params, from(cdr));
+                            }
+                            default -> buildApplication(consNode);
+                        };
+                    } else if (size == 4) {
+                        yield switch (symbolNode.val()) {
+                            case "if" -> {
+                                var cond = nodes.get(1);
+                                var trueBranch = nodes.get(2);
+                                var falseBranch = nodes.get(3);
+                                yield new IfExpr(from(cond), from(trueBranch), from(falseBranch));
+                            }
+                            default -> buildApplication(consNode);
+                        };
                     } else {
-                        throw new ParserException("unexpected S-expression: " + sexpr);
+                        yield buildApplication(consNode);
                     }
+                } else if (from(head) instanceof LambdaExpr lambdaExpr) {
+                    yield buildApplication(consNode);
+                } else {
+                    throw new ParserException("unexpected S-expression: " + sexpr);
                 }
             }
         };
