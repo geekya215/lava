@@ -1,116 +1,39 @@
 import io.geekya215.lava.Token;
 import io.geekya215.lava.Tokenizer;
-import io.geekya215.lava.exception.TokenizerException;
 import org.junit.jupiter.api.Test;
 
-import java.util.ArrayList;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class TokenizerTest {
     @Test
-    void getArithmeticToken() throws TokenizerException {
-        var input = "+ - * / mod neg";
-        var actualTokens = Tokenizer.tokenize(input);
-        var expectedTokens = new ArrayList<>() {{
-            add(new Token.Plus());
-            add(new Token.Minus());
-            add(new Token.Mul());
-            add(new Token.Div());
-            add(new Token.Mod());
-            add(new Token.Neg());
-        }};
+    void getParenthesis() {
+        var actualTokens = Tokenizer.tokenize("(())");
+        var expectedTokens = List.of(
+            new Token.LeftParen(),
+            new Token.LeftParen(),
+            new Token.RightParen(),
+            new Token.RightParen());
         assertEquals(expectedTokens, actualTokens);
     }
 
     @Test
-    void getSymbol() throws TokenizerException {
-        var input = "a b cd";
-        var actualTokens = Tokenizer.tokenize(input);
-        var expectedTokens = new ArrayList<>() {{
-            add(new Token.Symbol("a"));
-            add(new Token.Symbol("b"));
-            add(new Token.Symbol("cd"));
-        }};
+    void getQuote() {
+        var actualTokens = Tokenizer.tokenize("'abc");
+        var expectedTokens = List.of(
+            new Token.Quote(),
+            new Token.Symbol("abc"));
         assertEquals(expectedTokens, actualTokens);
     }
 
     @Test
-    void getBooleanLiterally() throws TokenizerException {
-        var input = "#t #f";
-        var actualTokens = Tokenizer.tokenize(input);
-        var expectedTokens = new ArrayList<>() {{
-            add(new Token.True());
-            add(new Token.False());
-        }};
-        assertEquals(expectedTokens, actualTokens);
-    }
-
-    @Test
-    void getIntegerToken() throws TokenizerException {
-        var input = "123 321 1";
-        var actualTokens = Tokenizer.tokenize(input);
-        var expectedTokens = new ArrayList<>() {{
-            add(new Token.Number(123));
-            add(new Token.Number(321));
-            add(new Token.Number(1));
-        }};
-        assertEquals(expectedTokens, actualTokens);
-    }
-
-    @Test
-    void withParenthesis() throws TokenizerException {
-        var input = "(+ 123 - 321 1)";
-        var actualTokens = Tokenizer.tokenize(input);
-        var expectedTokens = new ArrayList<>() {{
-            add(new Token.LeftParenthesis());
-            add(new Token.Plus());
-            add(new Token.Number(123));
-            add(new Token.Minus());
-            add(new Token.Number(321));
-            add(new Token.Number(1));
-            add(new Token.RightParenthesis());
-        }};
-        assertEquals(expectedTokens, actualTokens);
-    }
-
-    @Test
-    void withNestParenthesis() throws TokenizerException {
-        var input = "(* (+ 123 4 ) (neg 321))";
-        var actualTokens = Tokenizer.tokenize(input);
-        var expectedTokens = new ArrayList<>() {{
-            add(new Token.LeftParenthesis());
-            add(new Token.Mul());
-            add(new Token.LeftParenthesis());
-            add(new Token.Plus());
-            add(new Token.Number(123));
-            add(new Token.Number(4));
-            add(new Token.RightParenthesis());
-            add(new Token.LeftParenthesis());
-            add(new Token.Neg());
-            add(new Token.Number(321));
-            add(new Token.RightParenthesis());
-            add(new Token.RightParenthesis());
-        }};
-        assertEquals(expectedTokens,actualTokens );
-    }
-
-    @Test
-    void withNilLiterally() throws TokenizerException {
-        var input = "(nil 1 nil (+ 1 2))";
-        var actualTokens = Tokenizer.tokenize(input);
-        var expectedTokens = new ArrayList<>() {{
-            add(new Token.LeftParenthesis());
-            add(new Token.Nil());
-            add(new Token.Number(1));
-            add(new Token.Nil());
-            add(new Token.LeftParenthesis());
-            add(new Token.Plus());
-            add(new Token.Number(1));
-            add(new Token.Number(2));
-            add(new Token.RightParenthesis());
-            add(new Token.RightParenthesis());
-        }};
+    void getSymbol() {
+        var actualTokens = Tokenizer.tokenize("a b c");
+        var expectedTokens = List.of(
+            new Token.Symbol("a"),
+            new Token.Symbol("b"),
+            new Token.Symbol("c"));
         assertEquals(expectedTokens, actualTokens);
     }
 }
