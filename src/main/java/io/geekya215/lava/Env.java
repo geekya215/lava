@@ -1,7 +1,5 @@
 package io.geekya215.lava;
 
-import io.geekya215.lava.expr.Expr;
-
 import java.util.HashMap;
 import java.util.Optional;
 
@@ -39,7 +37,7 @@ public class Env {
         }
     }
 
-    public void set(String id, Expr expr) {
-        vars.put(id, expr);
+    public void set(String name, Expr expr) {
+        vars.put(name, expr);
     }
 }

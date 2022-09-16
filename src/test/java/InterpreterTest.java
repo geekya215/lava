@@ -1,348 +1,280 @@
-import io.geekya215.lava.Env;
-import io.geekya215.lava.Interpreter;
-import io.geekya215.lava.Parser;
-import io.geekya215.lava.Tokenizer;
-import io.geekya215.lava.exception.EvalException;
-import io.geekya215.lava.exception.ParserException;
-import io.geekya215.lava.exception.TokenizerException;
-import io.geekya215.lava.expr.*;
+import io.geekya215.lava.*;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class InterpreterTest {
-    @Test
-    void getNumber() throws TokenizerException, ParserException, EvalException {
-        var tokens = Tokenizer.tokenize("1");
-        var node = new Parser(tokens).parse();
-        var expr = Expr.from(node);
-        var actualResult = Interpreter.eval(expr, new Env());
-        var expectedResult = new IntegerExpr(1);
-        assertEquals(expectedResult, actualResult);
+    public Env env;
+
+    @BeforeEach
+    void initialEnv() {
+        env = Interpreter.initialStandardEnv();
+    }
+
+    Expr getExpr(String input) {
+        var tokens = Tokenizer.tokenize(input);
+        return Parser.parse(new Ref<>(tokens));
     }
 
     @Test
-    void OnePlusTwoEqualThree() throws TokenizerException, ParserException, EvalException {
-        var tokens = Tokenizer.tokenize("(+ 1 2)");
-        var node = new Parser(tokens).parse();
-        var expr = Expr.from(node);
-        var actualResult = Interpreter.eval(expr, new Env());
-        var expectedResult = new IntegerExpr(3);
-        assertEquals(expectedResult, actualResult);
-    }
-
-    @Test
-    void OneMinusTwoEqualNegativeOne() throws TokenizerException, ParserException, EvalException {
-        var tokens = Tokenizer.tokenize("(- 1 2)");
-        var node = new Parser(tokens).parse();
-        var expr = Expr.from(node);
-        var actualResult = Interpreter.eval(expr, new Env());
-        var expectedResult = new IntegerExpr(-1);
-        assertEquals(expectedResult, actualResult);
-    }
-
-    @Test
-    void OneMultiplyTwoEqualTwo() throws TokenizerException, ParserException, EvalException {
-        var tokens = Tokenizer.tokenize("(* 1 2)");
-        var node = new Parser(tokens).parse();
-        var expr = Expr.from(node);
-        var actualResult = Interpreter.eval(expr, new Env());
-        var expectedResult = new IntegerExpr(2);
-        assertEquals(expectedResult, actualResult);
-    }
-
-    @Test
-    void OneModDivideEqualZero() throws TokenizerException, ParserException, EvalException {
-        var tokens = Tokenizer.tokenize("(/ 1 2)");
-        var node = new Parser(tokens).parse();
-        var expr = Expr.from(node);
-        var actualResult = Interpreter.eval(expr, new Env());
-        var expectedResult = new IntegerExpr(0);
-        assertEquals(expectedResult, actualResult);
-    }
-
-    @Test
-    void OnePlusTwoMultiplyThreeEqualSeven() throws TokenizerException, ParserException, EvalException {
-        var tokens = Tokenizer.tokenize("(+ 1 (* 2 3))");
-        var node = new Parser(tokens).parse();
-        var expr = Expr.from(node);
-        var actualResult = Interpreter.eval(expr, new Env());
-        var expectedResult = new IntegerExpr(7);
-        assertEquals(expectedResult, actualResult);
-    }
-
-    @Test
-    void OneEqualOne() throws TokenizerException, ParserException, EvalException {
-        var tokens = Tokenizer.tokenize("(= 1 1)");
-        var node = new Parser(tokens).parse();
-        var expr = Expr.from(node);
-        var actualResult = Interpreter.eval(expr, new Env());
-        var expectedResult = new BoolExpr(true);
-        assertEquals(expectedResult, actualResult);
-    }
-
-    @Test
-    void TrueEqualTrue() throws TokenizerException, ParserException, EvalException {
-        var tokens = Tokenizer.tokenize("(= #t #t)");
-        var node = new Parser(tokens).parse();
-        var expr = Expr.from(node);
-        var actualResult = Interpreter.eval(expr, new Env());
-        var expectedResult = new BoolExpr(true);
-        assertEquals(expectedResult, actualResult);
-    }
-
-    @Test
-    void OneLessThanTwo() throws TokenizerException, ParserException, EvalException {
-        var tokens = Tokenizer.tokenize("(< 1 2)");
-        var node = new Parser(tokens).parse();
-        var expr = Expr.from(node);
-        var actualResult = Interpreter.eval(expr, new Env());
-        var expectedResult = new BoolExpr(true);
-        assertEquals(expectedResult, actualResult);
-    }
-
-    @Test
-    void TwoGreaterThanOne() throws TokenizerException, ParserException, EvalException {
-        var tokens = Tokenizer.tokenize("(> 2 1)");
-        var node = new Parser(tokens).parse();
-        var expr = Expr.from(node);
-        var actualResult = Interpreter.eval(expr, new Env());
-        var expectedResult = new BoolExpr(true);
-        assertEquals(expectedResult, actualResult);
-    }
-
-    @Test
-    void TwoLessThanOrEqualTwo() throws TokenizerException, ParserException, EvalException {
-        var tokens = Tokenizer.tokenize("(<= 2 2)");
-        var node = new Parser(tokens).parse();
-        var expr = Expr.from(node);
-        var actualResult = Interpreter.eval(expr, new Env());
-        var expectedResult = new BoolExpr(true);
-        assertEquals(expectedResult, actualResult);
-    }
-
-    @Test
-    void OneLessThanOrEqualTwo() throws TokenizerException, ParserException, EvalException {
-        var tokens = Tokenizer.tokenize("(<= 1 2)");
-        var node = new Parser(tokens).parse();
-        var expr = Expr.from(node);
-        var actualResult = Interpreter.eval(expr, new Env());
-        var expectedResult = new BoolExpr(true);
-        assertEquals(expectedResult, actualResult);
-    }
-
-    @Test
-    void ThreeGreaterThanOrEqualThree() throws TokenizerException, ParserException, EvalException {
-        var tokens = Tokenizer.tokenize("(>= 3 3)");
-        var node = new Parser(tokens).parse();
-        var expr = Expr.from(node);
-        var actualResult = Interpreter.eval(expr, new Env());
-        var expectedResult = new BoolExpr(true);
-        assertEquals(expectedResult, actualResult);
-    }
-
-    @Test
-    void FourGreaterThanOrEqualThree() throws TokenizerException, ParserException, EvalException {
-        var tokens = Tokenizer.tokenize("(>= 4 3)");
-        var node = new Parser(tokens).parse();
-        var expr = Expr.from(node);
-        var actualResult = Interpreter.eval(expr, new Env());
-        var expectedResult = new BoolExpr(true);
-        assertEquals(expectedResult, actualResult);
-    }
-
-    @Test
-    void NotTrueEqualFalse() throws TokenizerException, ParserException, EvalException {
-        var tokens = Tokenizer.tokenize("(not (= 1 1))");
-        var node = new Parser(tokens).parse();
-        var expr = Expr.from(node);
-        var actualResult = Interpreter.eval(expr, new Env());
-        var expectedResult = new BoolExpr(false);
-        assertEquals(expectedResult, actualResult);
-    }
-
-    @Test
-    void TrueAndFalseEqualFalse() throws TokenizerException, ParserException, EvalException {
-        var tokens = Tokenizer.tokenize("(and (= 1 1) (= 1 2))");
-        var node = new Parser(tokens).parse();
-        var expr = Expr.from(node);
-        var actualResult = Interpreter.eval(expr, new Env());
-        var expectedResult = new BoolExpr(false);
-        assertEquals(expectedResult, actualResult);
-    }
-
-    @Test
-    void TrueOrFalseEqualTrue() throws TokenizerException, ParserException, EvalException {
-        var tokens = Tokenizer.tokenize("(or (= 1 1) (= 1 2))");
-        var node = new Parser(tokens).parse();
-        var expr = Expr.from(node);
-        var actualResult = Interpreter.eval(expr, new Env());
-        var expectedResult = new BoolExpr(true);
-        assertEquals(expectedResult, actualResult);
-    }
-
-    @Test
-    void TrueXorFalseEqualTrue() throws TokenizerException, ParserException, EvalException {
-        var tokens = Tokenizer.tokenize("(xor (= 1 1) (= 1 2))");
-        var node = new Parser(tokens).parse();
-        var expr = Expr.from(node);
-        var actualResult = Interpreter.eval(expr, new Env());
-        var expectedResult = new BoolExpr(true);
-        assertEquals(expectedResult, actualResult);
-    }
-
-    @Test
-    void getCar() throws TokenizerException, ParserException, EvalException {
-        var tokens = Tokenizer.tokenize("(car (quote (#t #f)))");
-        var node = new Parser(tokens).parse();
-        var expr = Expr.from(node);
-        var actualResult = Interpreter.eval(expr, new Env());
-        var expectedResult = new BoolExpr(true);
-        assertEquals(expectedResult, actualResult);
-    }
-
-    @Test
-    void getCdr() throws TokenizerException, ParserException, EvalException {
-        var tokens = Tokenizer.tokenize("(cdr (quote (#t #f)))");
-        var node = new Parser(tokens).parse();
-        var expr = Expr.from(node);
-        var actualResult = Interpreter.eval(expr, new Env());
-        var expectedResult = new ConsExpr(new BoolExpr(false), new NilExpr());
-        assertEquals(expectedResult, actualResult);
-    }
-
-    @Test
-    void getCdrCar() throws TokenizerException, ParserException, EvalException {
-        var tokens = Tokenizer.tokenize("(car (cdr (quote (#t #f))))");
-        var node = new Parser(tokens).parse();
-        var expr = Expr.from(node);
-        var actualResult = Interpreter.eval(expr, new Env());
-        var expectedResult = new BoolExpr(false);
-        assertEquals(expectedResult, actualResult);
-    }
-
-    @Test
-    void getCarNil() throws TokenizerException, ParserException, EvalException {
-        var tokens = Tokenizer.tokenize("(car (quote ()))");
-        var node = new Parser(tokens).parse();
-        var expr = Expr.from(node);
-        var actualResult = Interpreter.eval(expr, new Env());
-        var expectedResult = new NilExpr();
-        assertEquals(expectedResult, actualResult);
-    }
-
-    @Test
-    void getCdrNil() throws TokenizerException, ParserException, EvalException {
-        var tokens = Tokenizer.tokenize("(cdr (quote ()))");
-        var node = new Parser(tokens).parse();
-        var expr = Expr.from(node);
-        var actualResult = Interpreter.eval(expr, new Env());
-        var expectedResult = new NilExpr();
-        assertEquals(expectedResult, actualResult);
-    }
-
-    @Test
-    void getCons() throws TokenizerException, ParserException, EvalException {
-        var tokens = Tokenizer.tokenize("(cons (+ 1 2) (cdr (quote (#t #f))))");
-        var node = new Parser(tokens).parse();
-        var expr = Expr.from(node);
-        var actualResult = Interpreter.eval(expr, new Env());
-        var expectedResult = new ConsExpr(new IntegerExpr(3), new ConsExpr(new BoolExpr(false), new NilExpr()));
-        assertEquals(expectedResult, actualResult);
-    }
-
-    @Test
-    void getIfTrueBranch() throws TokenizerException, ParserException, EvalException {
-        var tokens = Tokenizer.tokenize("(if (< 1 2) 1 2)");
-        var node = new Parser(tokens).parse();
-        var expr = Expr.from(node);
-        var actualResult = Interpreter.eval(expr, new Env());
-        var expectedResult = new IntegerExpr(1);
-        assertEquals(expectedResult, actualResult);
-    }
-
-    @Test
-    void getIfFalseBranch() throws TokenizerException, ParserException, EvalException {
-        var tokens = Tokenizer.tokenize("(if (> 1 2) 1 2)");
-        var node = new Parser(tokens).parse();
-        var expr = Expr.from(node);
-        var actualResult = Interpreter.eval(expr, new Env());
-        var expectedResult = new IntegerExpr(2);
-        assertEquals(expectedResult, actualResult);
-    }
-
-    @Test
-    void defineAEqualOne() throws TokenizerException, ParserException, EvalException {
-        var tokens = Tokenizer.tokenize("(define a 1)");
-        var node = new Parser(tokens).parse();
-        var expr = Expr.from(node);
-        var actualResult = Interpreter.eval(expr, new Env());
-        var expectedResult = new IntegerExpr(1);
-        assertEquals(expectedResult, actualResult);
-    }
-
-    @Test
-    void defineAEqualOneAndAccess() throws TokenizerException, ParserException, EvalException {
-        var tokens1 = Tokenizer.tokenize("(define a (quote (1 2 3)))");
-        var node1 = new Parser(tokens1).parse();
-        var expr1 = Expr.from(node1);
-        var env = new Env();
-        Interpreter.eval(expr1, env);
-        var tokens = Tokenizer.tokenize("(+ 1 (car (cdr a)))");
-        var node = new Parser(tokens).parse();
-        var expr = Expr.from(node);
+    void getNumberOne() {
+        var expr = getExpr("1");
         var actualResult = Interpreter.eval(expr, env);
-        var expectedResult = new IntegerExpr(3);
+        var expectedResult = new Expr.Number(1);
         assertEquals(expectedResult, actualResult);
     }
 
     @Test
-    void defineMaxFunction() throws TokenizerException, ParserException, EvalException {
-        var tokens1 = Tokenizer.tokenize("""
-            (define max (lambda (a b)
-                                (if (< a b)
-                                    b
-                                    a)))""");
-        var node1 = new Parser(tokens1).parse();
-        var expr1 = Expr.from(node1);
-        var env = new Env();
-        Interpreter.eval(expr1, env);
-        var tokens = Tokenizer.tokenize("(max 2 3)");
-        var node = new Parser(tokens).parse();
-        var expr = Expr.from(node);
+    void getQuoteA() {
+        var expr = getExpr("'a");
         var actualResult = Interpreter.eval(expr, env);
-        var expectedResult = new IntegerExpr(3);
+        var expectedResult = new Expr.Symbol("a");
         assertEquals(expectedResult, actualResult);
     }
 
     @Test
-    void IIFE() throws TokenizerException, ParserException, EvalException {
-        var tokens = Tokenizer.tokenize("((lambda () 1))");
-        var node = new Parser(tokens).parse();
-        var expr = Expr.from(node);
-        var actualResult = Interpreter.eval(expr, new Env());
-        var expectedResult = new IntegerExpr(1);
-        assertEquals(expectedResult, actualResult);
-    }
-
-    @Test
-    void FibFunction() throws TokenizerException, ParserException, EvalException {
-        var tokens1 = Tokenizer.tokenize("""
-            (define fact (lambda (n)
-                                 (if (<= n 1)
-                                     1
-                                     (* n
-                                        (fact (- n 1))))))"""
-        );
-        var node1 = new Parser(tokens1).parse();
-        var expr1 = Expr.from(node1);
-        var env = new Env();
-        Interpreter.eval(expr1, env);
-        var tokens = Tokenizer.tokenize("(fact 5)");
-        var node = new Parser(tokens).parse();
-        var expr = Expr.from(node);
+    void getQuoteListOfABC() {
+        var expr = getExpr("'(a b c)");
         var actualResult = Interpreter.eval(expr, env);
-        var expectedResult = new IntegerExpr(120);
+        var expectedResult = new Expr.List(
+            List.of(new Expr.Symbol("a"), new Expr.Symbol("b"), new Expr.Symbol("c")));
+        assertEquals(expectedResult, actualResult);
+    }
+
+    @Test
+    void OnePlusTwoEqualThree() {
+        var expr = getExpr("(+ 1 2)");
+        var actualResult = Interpreter.eval(expr, env);
+        var expectedResult = new Expr.Number(3);
+        assertEquals(expectedResult, actualResult);
+    }
+
+    @Test
+    void OneMinusTwoEqualNegativeOne() {
+        var expr = getExpr("(- 1 2)");
+        var actualResult = Interpreter.eval(expr, env);
+        var expectedResult = new Expr.Number(-1);
+        assertEquals(expectedResult, actualResult);
+    }
+
+    @Test
+    void OneMultiplyTwoEqualTwo() {
+        var expr = getExpr("(* 1 2)");
+        var actualResult = Interpreter.eval(expr, env);
+        var expectedResult = new Expr.Number(2);
+        assertEquals(expectedResult, actualResult);
+    }
+
+    @Test
+    void TwoDivideOneEqualTwo() {
+        var expr = getExpr("(/ 2 1)");
+        var actualResult = Interpreter.eval(expr, env);
+        var expectedResult = new Expr.Number(2);
+        assertEquals(expectedResult, actualResult);
+    }
+
+    @Test
+    void OnePlusTwoMultiplyThreeEqualSeven() {
+        var expr = getExpr("(+ 1 (* 2 3))");
+        var actualResult = Interpreter.eval(expr, env);
+        var expectedResult = new Expr.Number(7);
+        assertEquals(expectedResult, actualResult);
+    }
+
+    @Test
+    void OneLessThanTwo() {
+        var expr = getExpr("(< 1 2)");
+        var actualResult = Interpreter.eval(expr, env);
+        var expectedResult = new Expr.Symbol("#t");
+        assertEquals(expectedResult, actualResult);
+    }
+
+    @Test
+    void OneLessThanOrEqualTwo() {
+        var expr = getExpr("(<= 1 2)");
+        var actualResult = Interpreter.eval(expr, env);
+        var expectedResult = new Expr.Symbol("#t");
+        assertEquals(expectedResult, actualResult);
+    }
+
+    @Test
+    void TwoGreaterThanOne() {
+        var expr = getExpr("(> 2 1)");
+        var actualResult = Interpreter.eval(expr, env);
+        var expectedResult = new Expr.Symbol("#t");
+        assertEquals(expectedResult, actualResult);
+    }
+
+    @Test
+    void TwoGreaterThanOrEqualOne() {
+        var expr = getExpr("(>= 2 1)");
+        var actualResult = Interpreter.eval(expr, env);
+        var expectedResult = new Expr.Symbol("#t");
+        assertEquals(expectedResult, actualResult);
+    }
+
+    @Test
+    void OneEqualOne() {
+        var expr = getExpr("(= 1 1)");
+        var actualResult = Interpreter.eval(expr, env);
+        var expectedResult = new Expr.Symbol("#t");
+        assertEquals(expectedResult, actualResult);
+    }
+
+    @Test
+    void OneNotEqualTwo() {
+        var expr = getExpr("(= 1 2)");
+        var actualResult = Interpreter.eval(expr, env);
+        var expectedResult = new Expr.Symbol("#f");
+        assertEquals(expectedResult, actualResult);
+    }
+
+    @Test
+    void SymbolAEqualSymbolA() {
+        var expr = getExpr("(= 'a 'a)");
+        var actualResult = Interpreter.eval(expr, env);
+        var expectedResult = new Expr.Symbol("#t");
+        assertEquals(expectedResult, actualResult);
+    }
+
+    @Test
+    void ListOfABCNotEqualListOfAB() {
+        var expr = getExpr("(= '(a b c) '(a b))");
+        var actualResult = Interpreter.eval(expr, env);
+        var expectedResult = new Expr.Symbol("#f");
+        assertEquals(expectedResult, actualResult);
+    }
+
+    @Test
+    void CarListOfABCEqualA() {
+        var expr = getExpr("(car '(a b c))");
+        var actualResult = Interpreter.eval(expr, env);
+        var expectedResult = new Expr.Symbol("a");
+        assertEquals(expectedResult, actualResult);
+    }
+
+    @Test
+    void CarEmptyListEqualEmptyList() {
+        var expr = getExpr("(car ())");
+        var actualResult = Interpreter.eval(expr, env);
+        var expectedResult = new Expr.List(List.of());
+        assertEquals(expectedResult, actualResult);
+    }
+
+    @Test
+    void CdrListOfABCEqualListOfBC() {
+        var expr = getExpr("(cdr '(a b c))");
+        var actualResult = Interpreter.eval(expr, env);
+        var expectedResult = new Expr.List(
+            List.of(new Expr.Symbol("b"), new Expr.Symbol("c")));
+        assertEquals(expectedResult, actualResult);
+    }
+
+    @Test
+    void CdrEmptyListEqualEmptyList() {
+        var expr = getExpr("(cdr ())");
+        var actualResult = Interpreter.eval(expr, env);
+        var expectedResult = new Expr.List(List.of());
+        assertEquals(expectedResult, actualResult);
+    }
+
+    @Test
+    void ConsAWithListOfBCEqualListABC() {
+        var expr = getExpr("(cons 'a '(b c))");
+        var actualResult = Interpreter.eval(expr, env);
+        var expectedResult = new Expr.List(
+            List.of(new Expr.Symbol("a"), new Expr.Symbol("b"), new Expr.Symbol("c")));
+        assertEquals(expectedResult, actualResult);
+    }
+
+    @Test
+    void getSymbolAIfOneLessThanTwo() {
+        var expr = getExpr("(if (< 1 2) 'a 'b)");
+        var actualResult = Interpreter.eval(expr, env);
+        var expectedResult = new Expr.Symbol("a");
+        assertEquals(expectedResult, actualResult);
+    }
+
+    @Test
+    void getSymbolBIfOneNotLessThanTwo() {
+        var expr = getExpr("(if (> 1 2) 'a 'b)");
+        var actualResult = Interpreter.eval(expr, env);
+        var expectedResult = new Expr.Symbol("b");
+        assertEquals(expectedResult, actualResult);
+    }
+
+    @Test
+    void defineAEqualOneAndAccess() {
+        var expr = getExpr("(begin (define a 1) a)");
+        var actualResult = Interpreter.eval(expr, env);
+        var expectedResult = new Expr.Number(1);
+        assertEquals(expectedResult, actualResult);
+    }
+
+    @Test
+    void defineAEqualListOfABCAndAccess() {
+        var expr = getExpr("(begin (define a '(a b c)) a)");
+        var actualResult = Interpreter.eval(expr, env);
+        var expectedResult = new Expr.List(
+            List.of(new Expr.Symbol("a"), new Expr.Symbol("b"), new Expr.Symbol("c")));
+        assertEquals(expectedResult, actualResult);
+    }
+
+    @Test
+    void ListWithSymbolASymbolBSymbolCEqualListOfABC() {
+        var expr = getExpr("(list 'a 'b 'c)");
+        var actualResult = Interpreter.eval(expr, env);
+        var expectedResult = new Expr.List(
+            List.of(new Expr.Symbol("a"), new Expr.Symbol("b"), new Expr.Symbol("c")));
+        assertEquals(expectedResult, actualResult);
+    }
+
+    @Test
+    void defineLambdaWithZeroParametersAndReturnOne() {
+        var expr = getExpr("(begin (define one (lambda () 1)) (one))");
+        var actualResult = Interpreter.eval(expr, env);
+        var expectedResult = new Expr.Number(1);
+        assertEquals(expectedResult, actualResult);
+    }
+
+    @Test
+    void ImmediatelyInvokedFunctionExpression() {
+        var expr = getExpr("((lambda () 1))");
+        var actualResult = Interpreter.eval(expr, env);
+        var expectedResult = new Expr.Number(1);
+        assertEquals(expectedResult, actualResult);
+    }
+
+    @Test
+    void defineRecursiveFunction() {
+        var expr = getExpr("""
+            (begin
+                (define fib (lambda (n)
+                                    (if (<= n 1)
+                                        n
+                                        (+ (fib (- n 1)) (fib (- n 2))))))
+                (fib 10))
+            """);
+        var actualResult = Interpreter.eval(expr, env);
+        var expectedResult = new Expr.Number(55);
+        assertEquals(expectedResult, actualResult);
+    }
+
+    @Test
+    void defineHighOrderFunction() {
+        var expr = getExpr("""
+            (begin
+                (define repeat (lambda (f)
+                                       (lambda (x) (f (f x)))))
+                (define double (lambda (x) (* 2 x)))
+                (define quadruple (repeat double))
+                (quadruple 2))
+            """);
+        var actualResult = Interpreter.eval(expr, env);
+        var expectedResult = new Expr.Number(8);
         assertEquals(expectedResult, actualResult);
     }
 }

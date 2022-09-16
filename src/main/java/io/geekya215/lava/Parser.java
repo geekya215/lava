@@ -1,114 +1,64 @@
 package io.geekya215.lava;
 
 import io.geekya215.lava.exception.ParserException;
-import io.geekya215.lava.nodes.*;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
-public final class Parser {
-    private final PeekingIterator<Token> tokens;
+public class Parser {
+    public static Expr parse(Ref<List<Token>> tokens) throws ParserException {
+        var _tokens = tokens.unwrap();
+        if (_tokens.isEmpty()) {
+            throw new ParserException("unexpected EOF while reading");
+        }
 
-    public Parser(List<Token> tokens) {
-        this.tokens = new PeekingIterator<>(tokens);
+        var head = _tokens.get(0);
+        var tail = _tokens.subList(1, _tokens.size());
+
+        return switch (head) {
+            case Token.Quote quote -> {
+                tokens.update(tail);
+                yield new Expr.Quote(parse(tokens));
+            }
+            case Token.LeftParen leftParen -> {
+                tokens.update(tail);
+                yield parseList(tokens, new ArrayList<>());
+            }
+            case Token.RightParen rightParen -> throw new ParserException("unexpected )");
+            case Token.Symbol symbol -> {
+                tokens.update(tail);
+                var sym = symbol.value();
+                try {
+                    yield new Expr.Number(Integer.parseInt(sym));
+                } catch (Exception e) {
+                    yield new Expr.Symbol(sym);
+                }
+            }
+        };
     }
 
-    //
-    // sexpr -> atom | lparen sexpr-list rparen
-    // sexpr-list -> sexpr sexpr-list |
-    // atom -> number | operator
-    // lparen -> (
-    // rparen -> )
-    //
-    public SExprNode parse() throws ParserException {
-        var peek = tokens.peek();
-        if (peek.isPresent() && peek.get() instanceof Token.LeftParenthesis) {
-            skip(Token.LeftParenthesis.class);
-            var cons = parseList();
-            skip(Token.RightParenthesis.class);
-            return cons;
-        } else {
-            return parseAtom();
-        }
-    }
+    private static Expr.List parseList(Ref<List<Token>> remainTokens, List<Expr> list) throws ParserException {
+        var tokens = remainTokens.unwrap();
 
-    private SExprNode parseList() throws ParserException {
-        var peek = tokens.peek();
-        if (peek.isPresent()) {
-            return switch (peek.get()) {
-                case Token.RightParenthesis rp -> new NilNode();
-                default -> {
-                    var car = parse();
-                    var cdr = parseList();
-                    yield new ConsNode(car, cdr);
-                }
-            };
-        } else {
-            throw new ParserException("expected token");
+        if (tokens.isEmpty()) {
+            throw new ParserException("unexpected EOF while reading list");
         }
-    }
 
-    private SExprNode parseAtom() throws ParserException {
-        var peek = tokens.peek();
-        if (peek.isPresent()) {
-            var token = peek.get();
-            return switch (token) {
-                case Token.Number n -> {
-                    tokens.next();
-                    yield new IntegerNode(n.number());
-                }
-                case Token.True _t -> {
-                    tokens.next();
-                    yield new TrueNode();
-                }
-                case Token.False _f -> {
-                    tokens.next();
-                    yield new FalseNode();
-                }
-                case Token.Plus plus -> {
-                    tokens.next();
-                    yield new SymbolNode("+");
-                }
-                case Token.Minus minus -> {
-                    tokens.next();
-                    yield new SymbolNode("-");
-                }
-                case Token.Mul mul -> {
-                    tokens.next();
-                    yield new SymbolNode("*");
-                }
-                case Token.Div div -> {
-                    tokens.next();
-                    yield new SymbolNode("/");
-                }
-                case Token.Mod mod -> {
-                    tokens.next();
-                    yield new SymbolNode("mod");
-                }
-                case Token.Neg neg -> {
-                    tokens.next();
-                    yield new SymbolNode("neg");
-                }
-                case Token.Nil nil -> {
-                    tokens.next();
-                    yield new NilNode();
-                }
-                case Token.Symbol symbol -> {
-                    tokens.next();
-                    yield new SymbolNode(symbol.value());
-                }
-                default -> throw new IllegalStateException("unexpected value: " + token);
-            };
-        } else {
-            throw new ParserException("expected atom");
-        }
-    }
+        var head = tokens.get(0);
+        var tail = tokens.subList(1, tokens.size());
 
-    private void skip(Class<? extends Token> clazz) throws ParserException {
-        var peek = tokens.peek();
-        if (peek.isPresent() && peek.get().getClass() == clazz) {
-            tokens.next();
-        } else {
-            throw new ParserException("expected " + clazz.getSimpleName());
-        }
+        return switch (head) {
+            case Token.RightParen rightParen -> {
+                remainTokens.update(tail);
+                Collections.reverse(list);
+                yield new Expr.List(list);
+            }
+            default -> {
+                var expr = parse(remainTokens);
+                list.add(0, expr);
+                yield parseList(remainTokens, list);
+            }
+        };
     }
 }
