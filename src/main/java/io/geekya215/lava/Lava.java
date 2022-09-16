@@ -31,11 +31,14 @@ public class Lava {
                     System.out.print(INDICATOR);
                     System.out.println(result);
                 }
-            } catch (IOException e) {
-                System.err.println("lava crashed cause: " + e.getMessage());
-                System.exit(1);
             } catch (ParserException | EvalException e) {
                 System.out.println("error: " + e.getMessage());
+            } catch (IOException e) {
+                System.err.println("\ncrashed cause: " + e.getMessage());
+                System.exit(1);
+            } catch (StackOverflowError error) {
+                System.err.println("\ncrashed cause: call stack overflow");
+                System.exit(1);
             }
         }
     }
