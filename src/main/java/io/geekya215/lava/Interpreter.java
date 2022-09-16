@@ -166,6 +166,9 @@ public class Interpreter {
     public static Env initialStandardEnv() {
         var standardEnv = new Env();
 
+        standardEnv.set("#t", new Expr.Symbol("#t"));
+        standardEnv.set("#f", new Expr.Symbol("#f"));
+
         standardEnv.set("+", new Expr.BuiltinLambda(
             "+",
             applyArithmetic((a, b) -> a + b),
