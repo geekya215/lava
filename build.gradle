@@ -29,3 +29,9 @@ tasks.withType(JavaExec) {
 tasks.withType(Test) {
     jvmArgs("--enable-preview")
 }
+
+jar {
+    manifest {
+        attributes('Main-Class': 'io.geekya215.lava.Lava')
+    }
+}
