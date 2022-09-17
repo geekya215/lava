@@ -15,6 +15,13 @@ The internal implementation of lava is very concise, and it has some basic opera
 
 For lava all values of non-empty lists are treated as `#t`, and arithmetic operators only support integer.
 
+### Usage
+The minimum running version of Lava is Java 17. Because of the preview feature used in the source code, you need to run lava in the following way
+
+```bash
+java --enable-preview -jar lava.jar
+```
+
 ### Examples
 ```lisp
 lava> (+ 1 2)
