@@ -2,40 +2,45 @@ package io.geekya215.lava;
 
 import io.geekya215.lava.exception.EvalException;
 import io.geekya215.lava.exception.ParserException;
+import org.jline.reader.LineReaderBuilder;
+import org.jline.reader.UserInterruptException;
+import org.jline.terminal.TerminalBuilder;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.Objects;
 
 public class Lava {
     public static final String PROMPT = "lava> ";
     public static final String INDICATOR = "=> ";
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
         var standardEnv = Interpreter.initialStandardEnv();
-        var reader = new BufferedReader(new InputStreamReader(System.in));
+        var initialEnv = Env.extend(standardEnv);
+        var terminal = TerminalBuilder.builder()
+            .jansi(true)
+            .jna(false)
+            .build();
+        var lineReader = LineReaderBuilder.builder()
+            .terminal(terminal)
+            .build();
 
-        System.out.println("Hello Lava");
-
-        for (; ; ) {
-            System.out.print(PROMPT);
+        while (true) {
             try {
-                var input = reader.readLine();
+                var input = lineReader.readLine(PROMPT);
                 if (Objects.equals(input, "exit")) {
                     break;
                 } else {
                     var tokens = Tokenizer.tokenize(input);
                     var expr = Parser.parse(new Ref<>(tokens));
-                    var result = Interpreter.eval(expr, standardEnv);
+                    var result = Interpreter.eval(expr, initialEnv);
                     System.out.print(INDICATOR);
                     System.out.println(result);
                 }
+            } catch (UserInterruptException e) {
+                System.out.println("\nBye.");
+                break;
             } catch (ParserException | EvalException e) {
                 System.out.println("error: " + e.getMessage());
-            } catch (IOException e) {
-                System.err.println("\ncrashed cause: " + e.getMessage());
-                System.exit(1);
             } catch (StackOverflowError error) {
                 System.err.println("\ncrashed cause: call stack overflow");
                 System.exit(1);
