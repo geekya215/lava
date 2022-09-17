@@ -46,7 +46,7 @@ public class Interpreter {
                 if (head instanceof Expr.Symbol sym && Objects.equals(sym.value(), "define")) {
                     if (size == 3 && _list.get(1) instanceof Expr.Symbol _sym) {
                         env.set(_sym.value(), eval(_list.get(2), env));
-                        yield new Expr.Symbol("#f");
+                        yield Constants.FALSE;
                     } else {
                         throw new EvalException("invalid usage of 'define'");
                     }
@@ -130,7 +130,7 @@ public class Interpreter {
     }
 
     private static Expr getBooleanSymbol(Boolean test) {
-        return test ? new Expr.Symbol("#t") : new Expr.Symbol("#f");
+        return test ? Constants.TRUE : Constants.FALSE;
     }
 
     private static String unwrapSymbol(Expr expr) throws EvalException {
@@ -166,8 +166,8 @@ public class Interpreter {
     public static Env initialStandardEnv() {
         var standardEnv = new Env();
 
-        standardEnv.set("#t", new Expr.Symbol("#t"));
-        standardEnv.set("#f", new Expr.Symbol("#f"));
+        standardEnv.set("#t", Constants.TRUE);
+        standardEnv.set("#f", Constants.FALSE);
 
         standardEnv.set("+", new Expr.BuiltinLambda(
             "+",
@@ -207,12 +207,6 @@ public class Interpreter {
             applyComparator((a, b) -> a >= b)
             , standardEnv));
         standardEnv.set("=", new Expr.BuiltinLambda("=", args -> {
-            if (args.size() == 2 && args.get(0) instanceof Expr.Number left && args.get(1) instanceof Expr.Number right) {
-                return getBooleanSymbol(Objects.equals(left.value(), right.value()));
-            }
-            if (args.size() == 2 && args.get(0) instanceof Expr.Symbol left && args.get(1) instanceof Expr.Symbol right) {
-                return getBooleanSymbol(Objects.equals(left.value(), right.value()));
-            }
             if (args.size() == 2) {
                 return getBooleanSymbol(Objects.equals(args.get(0), args.get(1)));
             }
