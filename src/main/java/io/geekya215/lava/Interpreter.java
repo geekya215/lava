@@ -231,8 +231,9 @@ public class Interpreter {
         standardEnv.set("cons", new Expr.BuiltinLambda("cons", args -> {
             if (args.size() == 2 && args.get(1) instanceof Expr.List list) {
                 var _list = list.value();
-                _list.add(0, args.get(0));
-                return new Expr.List(_list);
+                var res = new ArrayList<>(_list);
+                res.add(0, args.get(0));
+                return new Expr.List(res);
             }
             throw new EvalException("invalid use of 'cons'");
         }, standardEnv));
