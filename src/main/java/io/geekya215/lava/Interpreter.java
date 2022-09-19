@@ -10,6 +10,25 @@ import java.util.function.BinaryOperator;
 import java.util.function.Function;
 
 public class Interpreter {
+
+    /**
+     * switch (expr) =
+     * | Quote(value) => value
+     * | Number(_) => expr
+     * | Symbol(value) => get_in_env(value)?.get() ?: @fail
+     * | List([]) => expr
+     * | List([Symbol("if"), predicate, conseq, alt]) => predicate_expr(predicate) ? eval(conseq) : eval(alt)
+     * | List([Symbol("if"), ...rest]) => @fail
+     * | List([Symbol("define"), Symbol(name), value]) => set_in_env(name, value)
+     * | List([Symbol("define"), ...rest]) => @fail
+     * | List([Symbol("lambda"), List(args), body]) => Lambda(@map(args, unwrap_symbol), body, create_env(Some(env))
+     * | List([Symbol("lambda"), ...rest]) => @fail
+     * | List([Symbol("quote"), value]) => value
+     * | List([Symbol("quote"), ...rest]) => @fail
+     * | List([Symbol(func_name), ...args]) => call_by_name(func_name, @map(args, eval(env)));
+     * | List([call_expr, ...args]) => application(eval(call_expr, env), "[dynamic]", @map(args, eval(env)));
+     * | _ => @fail
+     */
     public static Expr eval(Expr expr, Env env) throws EvalException {
         return switch (expr) {
             case Expr.Quote quote -> quote.expr();
