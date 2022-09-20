@@ -4,7 +4,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public sealed interface Expr permits
-    Expr.Number, Expr.Symbol, Expr.Quote, Expr.List, Expr.Lambda, Expr.BuiltinLambda {
+    Expr.Number, Expr.Symbol, Expr.Quote, Expr.List, Expr.Lambda, Expr.BuiltinLambda, Expr.Marco {
     record Number(Integer value) implements Expr {
         @Override
         public String toString() {
@@ -45,6 +45,14 @@ public sealed interface Expr permits
         @Override
         public String toString() {
             return "#<procedure " + name + ">";
+        }
+    }
+
+    record Marco(java.util.List<Expr> params, Expr body, Env env) implements Expr {
+        @Override
+        public String toString() {
+            var formattedParams = String.join(" ", params.toString());
+            return "(marco (" + formattedParams + ") " + body.toString() + ")";
         }
     }
 }

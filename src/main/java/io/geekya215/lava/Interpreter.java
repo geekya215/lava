@@ -25,8 +25,10 @@ public class Interpreter {
      * | List([Symbol("lambda"), ...rest]) => @fail
      * | List([Symbol("quote"), value]) => value
      * | List([Symbol("quote"), ...rest]) => @fail
+     * | List([Symbol("defmarco"), Symbol(name), List(args), body]) => set_in_env(Marco(args, body, env))
+     * | List([Symbol("defmarco"), ...rest]) => @fail
      * | List([Symbol(func_name), ...args]) => call_by_name(func_name, @map(args, eval(env)));
-     * | List([call_expr, ...args]) => application(eval(call_expr, env), "[dynamic]", @map(args, eval(env)));
+     * | List([call_expr, ...args]) => application(eval(call_expr, env), "[dynamic]", @map(args, eval(env)))
      * | _ => @fail
      */
     public static Expr eval(Expr expr, Env env) throws EvalException {
@@ -89,6 +91,20 @@ public class Interpreter {
                     }
                 }
 
+                if (head instanceof Expr.Symbol sym && Objects.equals(sym.value(), "defmarco")) {
+                    if (size == 4
+                        && _list.get(1) instanceof Expr.Symbol _sym
+                        && _list.get(2) instanceof Expr.List params
+                        && params.value().stream().allMatch(p -> p instanceof Expr.Symbol)) {
+                        var body = _list.get(3);
+                        var marco = new Expr.Marco(params.value(), body, env);
+                        env.set(_sym.value(), marco);
+                        yield Constants.FALSE;
+                    } else {
+                        throw new EvalException("invalid usage of 'defmarco'");
+                    }
+                }
+
                 if (head instanceof Expr.Symbol sym) {
                     var args = _list.subList(1, size).stream().map(e -> eval(e, env)).toList();
                     yield callByName(sym.value(), args, env);
@@ -136,8 +152,48 @@ public class Interpreter {
                 var func = builtinLambda.func();
                 yield func.apply(args);
             }
+            case Expr.Marco marco -> {
+                var params = marco.params();
+                var body = marco.body();
+                var expand = body;
+                if (params.size() == args.size()) {
+                    for (int i = 0; i < params.size(); i++) {
+                        if (body instanceof Expr.Symbol && Objects.equals(params.get(i), body)) {
+                            expand = args.get(i);
+                        }
+                        if (body instanceof Expr.List _list) {
+                            var newList = _list.value();
+                            expandMarco(params, args, newList);
+                            expand = new Expr.List(newList);
+                        }
+                    }
+                    yield eval(expand, marco.env());
+                } else {
+                    throw new EvalException("called marco "
+                        + name
+                        + " with "
+                        + args.size()
+                        + " argument(s), expected "
+                        + params.size()
+                        + " argument(s)");
+                }
+            }
             default -> throw new EvalException("expected function, got " + expr);
         };
+    }
+
+    private static void expandMarco(List<Expr> params, List<Expr> args, List<Expr> body) {
+        for (int i = 0; i < body.size(); i++) {
+            if (body.get(i) instanceof Expr.List _list) {
+                expandMarco(params, args, _list.value());
+            } else if (body.get(i) instanceof Expr.Symbol) {
+                for (int j = 0; j < params.size(); j++) {
+                    if (Objects.equals(params.get(j), body.get(i))) {
+                        body.set(i, args.get(j));
+                    }
+                }
+            }
+        }
     }
 
     private static Boolean predicateExpr(Expr expr) {

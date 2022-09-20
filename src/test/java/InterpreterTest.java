@@ -277,4 +277,17 @@ public class InterpreterTest {
         var expectedResult = new Expr.Number(8);
         assertEquals(expectedResult, actualResult);
     }
+
+    @Test
+    void defineMarcoAndExpand() {
+        var expr = getExpr("""
+            (begin
+                (defmarco defun (name args body) (define name (lambda args body)))
+                (defun 'plus '(a b) '(+ a b))
+                (plus 1 2))
+            """);
+        var actualResult = Interpreter.eval(expr, env);
+        var expectedResult = new Expr.Number(3);
+        assertEquals(expectedResult, actualResult);
+    }
 }
