@@ -2,9 +2,7 @@ package io.geekya215.lava;
 
 import io.geekya215.lava.exception.EvalException;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.function.BiPredicate;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
@@ -91,17 +89,17 @@ public class Interpreter {
                     }
                 }
 
-                if (head instanceof Expr.Symbol sym && Objects.equals(sym.value(), "defmarco")) {
+                if (head instanceof Expr.Symbol sym && Objects.equals(sym.value(), "defmacro")) {
                     if (size == 4
                         && _list.get(1) instanceof Expr.Symbol _sym
                         && _list.get(2) instanceof Expr.List params
                         && params.value().stream().allMatch(p -> p instanceof Expr.Symbol)) {
                         var body = _list.get(3);
-                        var marco = new Expr.Marco(params.value(), body, env);
-                        env.set(_sym.value(), marco);
+                        var macro = new Expr.Macro(params.value(), body, env);
+                        env.set(_sym.value(), macro);
                         yield Constants.FALSE;
                     } else {
-                        throw new EvalException("invalid usage of 'defmarco'");
+                        throw new EvalException("invalid usage of 'defmacro'");
                     }
                 }
 
@@ -152,24 +150,26 @@ public class Interpreter {
                 var func = builtinLambda.func();
                 yield func.apply(args);
             }
-            case Expr.Marco marco -> {
-                var params = marco.params();
-                var body = marco.body();
-                var expand = body;
+            case Expr.Macro macro -> {
+                var params = macro.params();
+                var body = macro.body();
+                var res = Constants.FALSE;
+                var map = new HashMap<Expr, Expr>();
+
                 if (params.size() == args.size()) {
                     for (int i = 0; i < params.size(); i++) {
-                        if (body instanceof Expr.Symbol && Objects.equals(params.get(i), body)) {
-                            expand = args.get(i);
-                        }
-                        if (body instanceof Expr.List _list) {
-                            var newList = _list.value();
-                            expandMarco(params, args, newList);
-                            expand = new Expr.List(newList);
-                        }
+                        map.put(params.get(i), args.get(i));
                     }
-                    yield eval(expand, marco.env());
+                    if (body instanceof Expr.Symbol && map.containsKey(body)) {
+                        res = map.get(body);
+                    } else if (body instanceof Expr.List list) {
+                        var newList = deepCopy(list.value());
+                        expandMacro(map, newList);
+                        res = new Expr.List(newList);
+                    }
+                    yield eval(res, macro.env());
                 } else {
-                    throw new EvalException("called marco "
+                    throw new EvalException("called macro "
                         + name
                         + " with "
                         + args.size()
@@ -182,16 +182,25 @@ public class Interpreter {
         };
     }
 
-    private static void expandMarco(List<Expr> params, List<Expr> args, List<Expr> body) {
+    private static List<Expr> deepCopy(List<Expr> source) {
+        var res = new ArrayList<Expr>();
+        for (Expr cur : source) {
+            if (cur instanceof Expr.List list) {
+                res.add(new Expr.List(deepCopy(list.value())));
+            } else {
+                res.add(cur);
+            }
+        }
+        return res;
+    }
+
+    private static void expandMacro(Map<Expr, Expr> map, List<Expr> body) {
         for (int i = 0; i < body.size(); i++) {
-            if (body.get(i) instanceof Expr.List _list) {
-                expandMarco(params, args, _list.value());
-            } else if (body.get(i) instanceof Expr.Symbol) {
-                for (int j = 0; j < params.size(); j++) {
-                    if (Objects.equals(params.get(j), body.get(i))) {
-                        body.set(i, args.get(j));
-                    }
-                }
+            var ele = body.get(i);
+            if (ele instanceof Expr.Symbol && map.containsKey(ele)) {
+                body.set(i, map.get(ele));
+            } else if (ele instanceof Expr.List list) {
+                expandMacro(map, list.value());
             }
         }
     }

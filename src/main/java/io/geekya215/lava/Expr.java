@@ -4,7 +4,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public sealed interface Expr permits
-    Expr.Number, Expr.Symbol, Expr.Quote, Expr.List, Expr.Lambda, Expr.BuiltinLambda, Expr.Marco {
+    Expr.Number, Expr.Symbol, Expr.Quote, Expr.List, Expr.Lambda, Expr.BuiltinLambda, Expr.Macro {
     record Number(Integer value) implements Expr {
         @Override
         public String toString() {
@@ -48,7 +48,7 @@ public sealed interface Expr permits
         }
     }
 
-    record Marco(java.util.List<Expr> params, Expr body, Env env) implements Expr {
+    record Macro(java.util.List<Expr> params, Expr body, Env env) implements Expr {
         @Override
         public String toString() {
             var formattedParams = String.join(" ", params.toString());

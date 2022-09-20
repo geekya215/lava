@@ -282,7 +282,7 @@ public class InterpreterTest {
     void defineMarcoAndExpand() {
         var expr = getExpr("""
             (begin
-                (defmarco defun (name args body) (define name (lambda args body)))
+                (defmacro defun (name args body) (define name (lambda args body)))
                 (defun 'plus '(a b) '(+ a b))
                 (plus 1 2))
             """);
