@@ -1,6 +1,7 @@
 plugins {
     id 'java'
     id "com.github.johnrengelman.shadow" version "7.1.2"
+    id 'org.graalvm.buildtools.native' version '0.9.14'
 }
 
 group 'io.geekya215'
@@ -15,7 +16,6 @@ dependencies {
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.9.0'
     implementation 'org.jline:jline-terminal-jansi:3.21.0'
     implementation 'org.jline:jline-reader:3.21.0'
-
 }
 
 test {
@@ -37,5 +37,16 @@ tasks.withType(Test) {
 jar {
     manifest {
         attributes('Main-Class': 'io.geekya215.lava.Lava')
+    }
+}
+
+graalvmNative {
+    binaries {
+        main {
+            imageName = 'lava'
+            mainClass = 'io.geekya215.lava.Lava'
+            verbose = true
+            buildArgs.add("-J--enable-preview")
+        }
     }
 }
