@@ -15,6 +15,7 @@ public class Lava {
     public static void main(String[] args) throws IOException {
         var standardEnv = Interpreter.initialStandardEnv();
         var initialEnv = Env.extend(standardEnv);
+        String filePath = null;
         var terminal = TerminalBuilder.builder()
             .jansi(true)
             .jna(false)
@@ -28,8 +29,13 @@ public class Lava {
                 var input = lineReader.readLine(Constants.PROMPT);
                 if (Objects.equals(input, "exit")) {
                     break;
-                } else if (input.startsWith("load")) {
-                    var filePath = input.substring(4).stripLeading().stripTrailing();
+                }  else if (Objects.equals(input, "reload")) {
+                    // change me
+                    if (filePath == null) {
+                        System.out.println("please load file first");
+                        continue;
+                    }
+
                     try (var sc = new Scanner(new File(filePath))) {
                         Expr result = null;
                         while (sc.hasNext()) {
@@ -42,6 +48,24 @@ public class Lava {
                             result = Interpreter.eval(expr, initialEnv);
                         }
                         System.out.println(result);
+                    }
+                }
+                else if (input.startsWith("load")) {
+                    filePath = input.substring(4).stripLeading().stripTrailing();
+                    try (var sc = new Scanner(new File(filePath))) {
+                        Expr result = null;
+                        while (sc.hasNext()) {
+                            var line = sc.nextLine();
+                            if (line.isBlank()) {
+                                continue;
+                            }
+                            var tokens = Tokenizer.tokenize(line);
+                            var expr = Parser.parse(new Ref<>(tokens));
+                            result = Interpreter.eval(expr, initialEnv);
+                        }
+                        System.out.println(result);
+                    } catch (Exception e) {
+                        System.out.println("no such file");
                     }
                 }
                 else {
