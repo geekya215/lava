@@ -11,12 +11,14 @@ The internal implementation of lava is very concise, and it has some basic opera
 
 - **list**: `cons` `car` `cdr` `list`
 
-- **procedure**: `begin`
+- **procedure**: `begin` `lambda`
+
+- **macro**: `defmacro`
 
 For lava all values of non-empty lists are treated as `#t`, and arithmetic operators only support integer.
 
 ### Usage
-The minimum running version of Lava is Java 17. Because of the preview feature used in the source code, you need to run lava in the following way
+The minimum running version of lava is Java 17. Because of the preview feature used in the source code, you need to run lava in the following way
 
 ```bash
 java --enable-preview -jar lava.jar
