@@ -10,9 +10,6 @@ import java.io.IOException;
 import java.util.Objects;
 
 public class Lava {
-    public static final String PROMPT = "lava> ";
-    public static final String INDICATOR = "=> ";
-
     public static void main(String[] args) throws IOException {
         var standardEnv = Interpreter.initialStandardEnv();
         var initialEnv = Env.extend(standardEnv);
@@ -26,14 +23,14 @@ public class Lava {
 
         while (true) {
             try {
-                var input = lineReader.readLine(PROMPT);
+                var input = lineReader.readLine(Constants.PROMPT);
                 if (Objects.equals(input, "exit")) {
                     break;
                 } else {
                     var tokens = Tokenizer.tokenize(input);
                     var expr = Parser.parse(new Ref<>(tokens));
                     var result = Interpreter.eval(expr, initialEnv);
-                    System.out.print(INDICATOR);
+                    System.out.print(Constants.INDICATOR);
                     System.out.println(result);
                 }
             } catch (UserInterruptException e) {
