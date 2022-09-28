@@ -6,8 +6,10 @@ import org.jline.reader.LineReaderBuilder;
 import org.jline.reader.UserInterruptException;
 import org.jline.terminal.TerminalBuilder;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Objects;
+import java.util.Scanner;
 
 public class Lava {
     public static void main(String[] args) throws IOException {
@@ -26,7 +28,23 @@ public class Lava {
                 var input = lineReader.readLine(Constants.PROMPT);
                 if (Objects.equals(input, "exit")) {
                     break;
-                } else {
+                } else if (input.startsWith("load")) {
+                    var filePath = input.substring(4).stripLeading().stripTrailing();
+                    try (var sc = new Scanner(new File(filePath))) {
+                        Expr result = null;
+                        while (sc.hasNext()) {
+                            var line = sc.nextLine();
+                            if (line.isBlank()) {
+                                continue;
+                            }
+                            var tokens = Tokenizer.tokenize(line);
+                            var expr = Parser.parse(new Ref<>(tokens));
+                            result = Interpreter.eval(expr, initialEnv);
+                        }
+                        System.out.println(result);
+                    }
+                }
+                else {
                     var tokens = Tokenizer.tokenize(input);
                     var expr = Parser.parse(new Ref<>(tokens));
                     var result = Interpreter.eval(expr, initialEnv);
