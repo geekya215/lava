@@ -4,6 +4,10 @@ import io.geekya215.lava.exception.EvalException;
 import io.geekya215.lava.exception.ParserException;
 import org.jline.reader.LineReaderBuilder;
 import org.jline.reader.UserInterruptException;
+import org.jline.reader.impl.completer.ArgumentCompleter;
+import org.jline.reader.impl.completer.FileNameCompleter;
+import org.jline.reader.impl.completer.NullCompleter;
+import org.jline.reader.impl.completer.StringsCompleter;
 import org.jline.terminal.TerminalBuilder;
 
 import java.io.File;
@@ -22,6 +26,7 @@ public class Lava {
             .build();
         var lineReader = LineReaderBuilder.builder()
             .terminal(terminal)
+            .completer(new ArgumentCompleter(new StringsCompleter("load"), new FileNameCompleter(), NullCompleter.INSTANCE))
             .build();
 
         while (true) {
@@ -29,13 +34,11 @@ public class Lava {
                 var input = lineReader.readLine(Constants.PROMPT);
                 if (Objects.equals(input, "exit")) {
                     break;
-                }  else if (Objects.equals(input, "reload")) {
-                    // change me
+                } else if (Objects.equals(input, "reload")) {
                     if (filePath == null) {
                         System.out.println("please load file first");
                         continue;
                     }
-
                     try (var sc = new Scanner(new File(filePath))) {
                         Expr result = null;
                         while (sc.hasNext()) {
@@ -49,8 +52,7 @@ public class Lava {
                         }
                         System.out.println(result);
                     }
-                }
-                else if (input.startsWith("load")) {
+                } else if (input.startsWith("load")) {
                     filePath = input.substring(4).stripLeading().stripTrailing();
                     try (var sc = new Scanner(new File(filePath))) {
                         Expr result = null;
@@ -65,10 +67,9 @@ public class Lava {
                         }
                         System.out.println(result);
                     } catch (Exception e) {
-                        System.out.println("no such file");
+                        System.out.println("file not exist");
                     }
-                }
-                else {
+                } else {
                     var tokens = Tokenizer.tokenize(input);
                     var expr = Parser.parse(new Ref<>(tokens));
                     var result = Interpreter.eval(expr, initialEnv);
