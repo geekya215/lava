@@ -32,7 +32,8 @@ public class Lava {
         while (true) {
             try {
                 var input = lineReader.readLine(Constants.PROMPT);
-                if (Objects.equals(input, "exit")) {
+                if (input.isBlank()) {
+                } else if (Objects.equals(input, "exit")) {
                     break;
                 } else if (Objects.equals(input, "reload")) {
                     if (filePath == null) {
