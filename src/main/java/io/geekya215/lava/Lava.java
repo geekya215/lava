@@ -39,16 +39,16 @@ public class Lava {
                 var input = lineReader.readLine(Constants.PROMPT);
                 if (input.isBlank()) {
                     continue;
-                } else if (Objects.equals(input, "exit")) {
+                } else if (Objects.equals(input, Command.EXIT)) {
                     System.out.println("\nBye.");
                     System.exit(0);
-                } else if (Objects.equals(input, "reload")) {
+                } else if (Objects.equals(input, Command.RELOAD)) {
                     if (filePath == null) {
                         System.out.println("error: please load file first");
                         continue;
                     }
                     res = loadFile(filePath, initialEnv);
-                } else if (input.startsWith("load")) {
+                } else if (input.startsWith(Command.LOAD)) {
                     filePath = input.substring(4).stripLeading().stripTrailing();
                     res = loadFile(filePath, initialEnv);
                 } else {
