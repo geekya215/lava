@@ -207,6 +207,21 @@ public class InterpreterTest {
     }
 
     @Test
+    void getWordByNumber() {
+        var expr = getExpr("""
+            (begin 
+                (define a 3) 
+                (cond 
+                    ((= a 1) 'one)
+                    ((= a 2) 'two)
+                    (else    'others)))
+        """);
+        var actualResult = Interpreter.eval(expr, env);
+        var expectedResult = new Expr.Symbol("others");
+        assertEquals(expectedResult, actualResult);
+    }
+
+    @Test
     void defineAEqualOneAndAccess() {
         var expr = getExpr("(begin (define a 1) a)");
         var actualResult = Interpreter.eval(expr, env);

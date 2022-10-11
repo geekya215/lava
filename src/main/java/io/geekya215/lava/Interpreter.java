@@ -17,6 +17,7 @@ public class Interpreter {
      * | List([]) => expr
      * | List([Symbol("if"), predicate, conseq, alt]) => predicate_expr(predicate) ? eval(conseq) : eval(alt)
      * | List([Symbol("if"), ...rest]) => @fail
+     * | List([Symbol("cond“), ...rest]) =>
      * | List([Symbol("define"), Symbol(name), value]) => set_in_env(name, value)
      * | List([Symbol("define"), ...rest]) => @fail
      * | List([Symbol("lambda"), List(args), body]) => Lambda(@map(args, unwrap_symbol), body, create_env(Some(env))
@@ -29,6 +30,9 @@ public class Interpreter {
      * | List([call_expr, ...args]) => application(eval(call_expr, env), "[dynamic]", @map(args, eval(env)))
      * | _ => @fail
      */
+
+    // Todo
+    // use utility to check keywords
     public static Expr eval(Expr expr, Env env) throws EvalException {
         return switch (expr) {
             case Expr.Quote quote -> quote.expr();
@@ -60,6 +64,27 @@ public class Interpreter {
                     } else {
                         throw new EvalException("invalid usage of 'if'");
                     }
+                }
+
+                // Todo
+                // can we use stream instead of for loop?
+                if (head instanceof Expr.Symbol sym && Objects.equals(sym.value(), "cond")) {
+                    var res = _list.subList(1, _list.size());
+                    for (var cond : res) {
+                        if (cond instanceof Expr.List _l && _l.value().size() == 2) {
+                            var test = _l.value().get(0);
+                            var action = _l.value().get(1);
+                            if (test instanceof Expr.Symbol _test && Objects.equals(_test.value(), "else")) {
+                                yield eval(action, env);
+                            }
+                            if (predicateExpr(eval(test, env))) {
+                                yield eval(action, env);
+                            }
+                        } else {
+                            throw new EvalException("invalid usage of 'cond'");
+                        }
+                    }
+                    yield Constants.FALSE;
                 }
 
                 if (head instanceof Expr.Symbol sym && Objects.equals(sym.value(), "define")) {
