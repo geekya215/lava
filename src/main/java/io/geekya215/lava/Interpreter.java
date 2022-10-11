@@ -31,8 +31,6 @@ public class Interpreter {
      * | _ => @fail
      */
 
-    // Todo
-    // use utility to check keywords
     public static Expr eval(Expr expr, Env env) throws EvalException {
         return switch (expr) {
             case Expr.Quote quote -> quote.expr();
@@ -55,7 +53,7 @@ public class Interpreter {
                 var head = _list.get(0);
                 var size = _list.size();
 
-                if (head instanceof Expr.Symbol sym && Objects.equals(sym.value(), "if")) {
+                if (checkKeyword(head, "if")) {
                     if (size == 4) {
                         var predicate = _list.get(1);
                         var conseq = _list.get(2);
@@ -68,7 +66,7 @@ public class Interpreter {
 
                 // Todo
                 // can we use stream instead of for loop?
-                if (head instanceof Expr.Symbol sym && Objects.equals(sym.value(), "cond")) {
+                if (checkKeyword(head, "cond")) {
                     var res = _list.subList(1, _list.size());
                     for (var cond : res) {
                         if (cond instanceof Expr.List _l && _l.value().size() == 2) {
@@ -87,7 +85,7 @@ public class Interpreter {
                     yield Constants.FALSE;
                 }
 
-                if (head instanceof Expr.Symbol sym && Objects.equals(sym.value(), "define")) {
+                if (checkKeyword(head, "define")) {
                     if (size == 3 && _list.get(1) instanceof Expr.Symbol _sym) {
                         env.set(_sym.value(), eval(_list.get(2), env));
                         yield Constants.FALSE;
@@ -96,7 +94,7 @@ public class Interpreter {
                     }
                 }
 
-                if (head instanceof Expr.Symbol sym && Objects.equals(sym.value(), "lambda")) {
+                if (checkKeyword(head, "lambda")) {
                     if (size == 3 && _list.get(1) instanceof Expr.List params) {
                         var _params = params.value().stream().map(Interpreter::unwrapSymbol).toList();
                         var body = _list.get(2);
@@ -106,7 +104,7 @@ public class Interpreter {
                     }
                 }
 
-                if (head instanceof Expr.Symbol sym && Objects.equals(sym.value(), "quote")) {
+                if (checkKeyword(head, "quote")) {
                     if (size == 2) {
                         yield _list.get(1);
                     } else {
@@ -114,7 +112,7 @@ public class Interpreter {
                     }
                 }
 
-                if (head instanceof Expr.Symbol sym && Objects.equals(sym.value(), "defmacro")) {
+                if (checkKeyword(head, "defmacro")) {
                     if (size == 4
                         && _list.get(1) instanceof Expr.Symbol _sym
                         && _list.get(2) instanceof Expr.List params
@@ -217,6 +215,10 @@ public class Interpreter {
             }
         }
         return res;
+    }
+
+    private static Boolean checkKeyword(Expr e, String keyword) {
+        return e instanceof Expr.Symbol s && Objects.equals(s.value(), keyword);
     }
 
     private static void expandMacro(Map<Expr, Expr> map, List<Expr> body) {
