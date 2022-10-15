@@ -126,6 +126,21 @@ public class Interpreter {
                     }
                 }
 
+                if (checkKeyword(head, "atom?")) {
+                    if (size == 2) {
+                        var arg = eval(_list.get(1), env);
+                        if (arg instanceof Expr.Number
+                            || arg instanceof Expr.Symbol
+                            || (arg instanceof Expr.List _l && _l.value().size() == 0)) {
+                            yield Constants.TRUE;
+                        } else {
+                            yield Constants.FALSE;
+                        }
+                    } else {
+                        throw new EvalException("invalid usage of 'atom?'");
+                    }
+                }
+
                 if (head instanceof Expr.Symbol sym) {
                     var args = _list.subList(1, size).stream().map(e -> eval(e, env)).toList();
                     yield callByName(sym.value(), args, env);
