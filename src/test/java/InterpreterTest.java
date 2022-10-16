@@ -222,6 +222,38 @@ public class InterpreterTest {
     }
 
     @Test
+    void IntegerIsAtom() {
+        var expr = getExpr("(atom? 1)");
+        var actualResult = Interpreter.eval(expr, env);
+        var expectedResult = new Expr.Symbol("#t");
+        assertEquals(expectedResult, actualResult);
+    }
+
+    @Test
+    void SymbolIsAtom() {
+        var expr = getExpr("(atom? 'a)");
+        var actualResult = Interpreter.eval(expr, env);
+        var expectedResult = new Expr.Symbol("#t");
+        assertEquals(expectedResult, actualResult);
+    }
+
+    @Test
+    void NilIsAtom() {
+        var expr = getExpr("(atom? ())");
+        var actualResult = Interpreter.eval(expr, env);
+        var expectedResult = new Expr.Symbol("#t");
+        assertEquals(expectedResult, actualResult);
+    }
+
+    @Test
+    void ConsIsNotAtom() {
+        var expr = getExpr("(atom? '(1 a 2))");
+        var actualResult = Interpreter.eval(expr, env);
+        var expectedResult = new Expr.Symbol("#f");
+        assertEquals(expectedResult, actualResult);
+    }
+
+    @Test
     void defineAEqualOneAndAccess() {
         var expr = getExpr("(begin (define a 1) a)");
         var actualResult = Interpreter.eval(expr, env);
