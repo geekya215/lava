@@ -13,7 +13,6 @@ import org.jline.terminal.TerminalBuilder;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.Objects;
 import java.util.Scanner;
 
@@ -67,6 +66,9 @@ public class Lava {
                 System.out.println("error: file not exist");
             } catch (StackOverflowError error) {
                 System.err.println("\ncrashed cause: call stack overflow");
+                System.exit(1);
+            } catch (Exception e) {
+                System.err.println("unknown errors");
                 System.exit(1);
             }
         }
