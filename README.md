@@ -15,6 +15,8 @@ The internal implementation of lava is very concise, and it has some basic opera
 
 - **macro**: `defmacro`
 
+- **other**: `quote` `cond` `if` `atom?`
+
 For lava all values of non-empty lists are treated as `#t`, and arithmetic operators only support integer.
 
 ### Usage
