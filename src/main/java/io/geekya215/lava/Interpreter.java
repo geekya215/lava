@@ -8,29 +8,6 @@ import java.util.function.BinaryOperator;
 import java.util.function.Function;
 
 public class Interpreter {
-
-    /**
-     * switch (expr) =
-     * | Quote(value) => value
-     * | Number(_) => expr
-     * | Symbol(value) => get_in_env(value)?.get() ?: @fail
-     * | List([]) => expr
-     * | List([Symbol("if"), predicate, conseq, alt]) => predicate_expr(predicate) ? eval(conseq) : eval(alt)
-     * | List([Symbol("if"), ...rest]) => @fail
-     * | List([Symbol("cond“), ...rest]) =>
-     * | List([Symbol("define"), Symbol(name), value]) => set_in_env(name, value)
-     * | List([Symbol("define"), ...rest]) => @fail
-     * | List([Symbol("lambda"), List(args), body]) => Lambda(@map(args, unwrap_symbol), body, create_env(Some(env))
-     * | List([Symbol("lambda"), ...rest]) => @fail
-     * | List([Symbol("quote"), value]) => value
-     * | List([Symbol("quote"), ...rest]) => @fail
-     * | List([Symbol("defmarco"), Symbol(name), List(args), body]) => set_in_env(Marco(args, body, env))
-     * | List([Symbol("defmarco"), ...rest]) => @fail
-     * | List([Symbol(func_name), ...args]) => call_by_name(func_name, @map(args, eval(env)));
-     * | List([call_expr, ...args]) => application(eval(call_expr, env), "[dynamic]", @map(args, eval(env)))
-     * | _ => @fail
-     */
-
     public static Expr eval(Expr expr, Env env) throws EvalException {
         return switch (expr) {
             case Expr.Quote quote -> quote.expr();
@@ -141,14 +118,15 @@ public class Interpreter {
                     }
                 }
 
+                // lazy eval strategy
                 if (head instanceof Expr.Symbol sym) {
-                    var args = _list.subList(1, size).stream().map(e -> eval(e, env)).toList();
+                    var args = _list.subList(1, size);
                     yield callByName(sym.value(), args, env);
                 }
 
                 var lambda = eval(head, env);
                 var args = _list.subList(1, size).stream().map(e -> eval(e, env)).toList();
-                yield application(lambda, "[dynamic]", args);
+                yield application(lambda, "[dynamic]", args, env);
             }
             default -> throw new EvalException("unknown list form");
         };
@@ -157,21 +135,22 @@ public class Interpreter {
     private static Expr callByName(String name, List<Expr> args, Env env) throws EvalException {
         var lambda = env.get(name);
         if (lambda.isPresent()) {
-            return application(lambda.get(), name, args);
+            return application(lambda.get(), name, args, env);
         } else {
             throw new EvalException("attempted to call undefined function: " + name);
         }
     }
 
-    private static Expr application(Expr expr, String name, List<Expr> args) throws EvalException {
+    private static Expr application(Expr expr, String name, List<Expr> args, Env env) throws EvalException {
         return switch (expr) {
             case Expr.Lambda lambda -> {
                 var params = lambda.params();
+                var _args = args.stream().map(e -> eval(e, env)).toList();
                 var body = lambda.body();
                 var newEnv = Env.extend(lambda.env());
                 if (params.size() == args.size()) {
                     for (int i = 0; i < params.size(); i++) {
-                        newEnv.set(params.get(i), args.get(i));
+                        newEnv.set(params.get(i), _args.get(i));
                     }
                     yield eval(body, newEnv);
                 } else {
@@ -186,7 +165,7 @@ public class Interpreter {
             }
             case Expr.BuiltinLambda builtinLambda -> {
                 var func = builtinLambda.func();
-                yield func.apply(args);
+                yield func.apply(args.stream().map(e -> eval(e, env)).toList());
             }
             case Expr.Macro macro -> {
                 var params = macro.params();

@@ -330,7 +330,7 @@ public class InterpreterTest {
         var expr = getExpr("""
             (begin
                 (defmacro defun (name args body) (define name (lambda args body)))
-                (defun 'plus '(a b) '(+ a b))
+                (defun plus (a b) (+ a b))
                 (plus 1 2))
             """);
         var actualResult = Interpreter.eval(expr, env);
