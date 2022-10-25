@@ -6,12 +6,8 @@ import java.util.StringTokenizer;
 
 public class Tokenizer {
     public static List<Token> tokenize(String input) {
-        var text = input
-            .replaceAll("\\(", " ( ")
-            .replaceAll("\\)", " ) ")
-            .replaceAll("'", " ' ");
         var tokens = new ArrayList<Token>();
-        var tokenizer = new StringTokenizer(text);
+        var tokenizer = new StringTokenizer(input);
 
         while (tokenizer.hasMoreTokens()) {
             var lex = tokenizer.nextToken();

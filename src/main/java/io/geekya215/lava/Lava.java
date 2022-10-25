@@ -36,20 +36,21 @@ public class Lava {
         // loop
         while (true) {
             try {
-                var input = lineReader.readLine(Constants.PROMPT);
+                var text = lineReader.readLine(Constants.PROMPT);
+                var input = Utils.preprocessInput(text);
                 if (input.isBlank()) {
                     continue;
-                } else if (Objects.equals(input, Command.EXIT)) {
+                } else if (Objects.equals(text, Command.EXIT)) {
                     System.out.println("\nBye.");
                     System.exit(0);
-                } else if (Objects.equals(input, Command.RELOAD)) {
+                } else if (Objects.equals(text, Command.RELOAD)) {
                     if (filePath == null) {
                         System.out.println("error: please load file first");
                         continue;
                     }
                     res = loadFile(filePath, initialEnv);
-                } else if (input.startsWith(Command.LOAD)) {
-                    filePath = input.substring(4).stripLeading().stripTrailing();
+                } else if (text.startsWith(Command.LOAD)) {
+                    filePath = text.substring(4).stripLeading().stripTrailing();
                     res = loadFile(filePath, initialEnv);
                 } else {
                     res = eval(input, initialEnv);
@@ -84,7 +85,8 @@ public class Lava {
         try (var sc = new Scanner(new File(path))) {
             Expr res = null;
             while (sc.hasNext()) {
-                var line = sc.nextLine();
+                var text = sc.nextLine();
+                var line = Utils.preprocessInput(text);
                 if (line.isBlank()) {
                     continue;
                 }

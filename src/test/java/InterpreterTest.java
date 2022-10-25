@@ -15,7 +15,7 @@ public class InterpreterTest {
     }
 
     Expr getExpr(String input) {
-        var tokens = Tokenizer.tokenize(input);
+        var tokens = Tokenizer.tokenize(Utils.preprocessInput(input));
         return Parser.parse(new Ref<>(tokens));
     }
 
@@ -209,13 +209,13 @@ public class InterpreterTest {
     @Test
     void getWordByNumber() {
         var expr = getExpr("""
-            (begin 
-                (define a 3) 
-                (cond 
-                    ((= a 1) 'one)
-                    ((= a 2) 'two)
-                    (else    'others)))
-        """);
+                (begin 
+                    (define a 3) 
+                    (cond 
+                        ((= a 1) 'one)
+                        ((= a 2) 'two)
+                        (else    'others)))
+            """);
         var actualResult = Interpreter.eval(expr, env);
         var expectedResult = new Expr.Symbol("others");
         assertEquals(expectedResult, actualResult);
