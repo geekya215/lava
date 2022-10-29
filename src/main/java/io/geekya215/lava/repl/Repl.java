@@ -1,5 +1,6 @@
-package io.geekya215.lava;
+package io.geekya215.lava.repl;
 
+import io.geekya215.lava.*;
 import io.geekya215.lava.exception.EvalException;
 import io.geekya215.lava.exception.ParserException;
 import org.jline.reader.UserInterruptException;
@@ -8,12 +9,10 @@ import java.io.FileNotFoundException;
 import java.nio.file.Path;
 import java.util.Scanner;
 
-public class Repl {
-    private final IO io;
-    private final String prompt;
-
+public abstract class Repl {
+    protected final IO io;
+    protected final String prompt;
     private final ReplContext ctx;
-
     private final Env env = Env.extend(Interpreter.initialStandardEnv());
 
     public Repl(IO io, String prompt, ReplContext ctx) {
@@ -22,9 +21,9 @@ public class Repl {
         this.ctx = ctx;
     }
 
-    private String hintMessage() {
-        return "Welcome to Lava REPL!";
-    }
+    protected abstract String hintMessage();
+
+    protected abstract String readLine(String prompt);
 
     public void start() {
         io.println(hintMessage());
@@ -35,7 +34,7 @@ public class Repl {
         Expr result = null;
         while (true) {
             try {
-                var x = io.readLine(prompt);
+                var x = readLine(prompt + "> ");
                 // skip blank input
                 if (x.isBlank()) {
                     continue;
@@ -48,17 +47,20 @@ public class Repl {
                 } else if (s.equalsIgnoreCase(Command.RELOAD)) {
                     result = evalFromFile();
                 } else if (s.startsWith(Command.LOAD)) {
-                    var path = s.substring(4);
+                    var path = s.substring(4).stripLeading().stripTrailing();
                     ctx.setFileLoadPath(Path.of(path));
                     result = evalFromFile();
                 } else {
                     // preprocess input to ignore comments
                     var input = Utils.preprocessInput(x);
+                    if (input.isBlank()) {
+                        continue;
+                    }
                     result = eval(input, env);
                 }
                 io.println(result);
             } catch (UserInterruptException e) {
-                io.println("\nctrl-c interrupt");
+                io.println("\nuser interrupt");
                 System.exit(1);
             } catch (ParserException | EvalException e) {
                 io.println("error: " + e.getMessage());

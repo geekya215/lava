@@ -1,4 +1,4 @@
-package io.geekya215.lava;
+package io.geekya215.lava.repl;
 
 import java.nio.file.Path;
 

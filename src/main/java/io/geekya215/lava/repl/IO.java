@@ -1,7 +1,6 @@
-package io.geekya215.lava;
+package io.geekya215.lava.repl;
 
 import java.io.PrintWriter;
-import java.util.Objects;
 import java.util.Scanner;
 
 public class IO {
@@ -16,7 +15,7 @@ public class IO {
     }
 
     public String readLine(String prompt) {
-        print(prompt + "> ");
+        print(prompt);
         return scanner.nextLine();
     }
 
