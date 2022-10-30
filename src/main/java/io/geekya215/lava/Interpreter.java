@@ -1,5 +1,6 @@
 package io.geekya215.lava;
 
+import io.geekya215.lava.adt.Expr;
 import io.geekya215.lava.exception.EvalException;
 
 import java.util.*;

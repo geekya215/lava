@@ -1,4 +1,7 @@
 import io.geekya215.lava.*;
+import io.geekya215.lava.adt.Expr;
+import io.geekya215.lava.utils.Ref;
+import io.geekya215.lava.utils.Utils;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;

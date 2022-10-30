@@ -1,4 +1,4 @@
-package io.geekya215.lava;
+package io.geekya215.lava.adt;
 
 public sealed interface Token permits
     Token.Symbol, Token.Quote,

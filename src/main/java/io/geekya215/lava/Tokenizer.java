@@ -1,5 +1,7 @@
 package io.geekya215.lava;
 
+import io.geekya215.lava.adt.Token;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;

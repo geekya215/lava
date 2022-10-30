@@ -1,8 +1,11 @@
 package io.geekya215.lava.repl;
 
 import io.geekya215.lava.*;
+import io.geekya215.lava.adt.Expr;
 import io.geekya215.lava.exception.EvalException;
 import io.geekya215.lava.exception.ParserException;
+import io.geekya215.lava.utils.Ref;
+import io.geekya215.lava.utils.Utils;
 import org.jline.reader.UserInterruptException;
 
 import java.io.FileNotFoundException;

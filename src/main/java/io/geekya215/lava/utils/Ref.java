@@ -1,4 +1,4 @@
-package io.geekya215.lava;
+package io.geekya215.lava.utils;
 
 public final class Ref<T> {
     private T value;

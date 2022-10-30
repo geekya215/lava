@@ -1,4 +1,4 @@
-package io.geekya215.lava;
+package io.geekya215.lava.utils;
 
 public final class Utils {
     private Utils() {

@@ -1,6 +1,6 @@
-import io.geekya215.lava.Token;
+import io.geekya215.lava.adt.Token;
 import io.geekya215.lava.Tokenizer;
-import io.geekya215.lava.Utils;
+import io.geekya215.lava.utils.Utils;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;

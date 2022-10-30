@@ -1,4 +1,6 @@
-package io.geekya215.lava;
+package io.geekya215.lava.adt;
+
+import io.geekya215.lava.Env;
 
 import java.util.function.Function;
 import java.util.stream.Collectors;

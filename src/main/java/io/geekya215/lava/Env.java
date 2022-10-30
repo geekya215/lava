@@ -1,5 +1,7 @@
 package io.geekya215.lava;
 
+import io.geekya215.lava.adt.Expr;
+
 import java.util.HashMap;
 import java.util.Optional;
 
