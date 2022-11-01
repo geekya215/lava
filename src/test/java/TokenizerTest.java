@@ -1,5 +1,5 @@
-import io.geekya215.lava.adt.Token;
 import io.geekya215.lava.Tokenizer;
+import io.geekya215.lava.adt.Token;
 import io.geekya215.lava.utils.Utils;
 import org.junit.jupiter.api.Test;
 
@@ -12,10 +12,10 @@ public class TokenizerTest {
     void getParenthesis() {
         var actualTokens = Tokenizer.tokenize(Utils.preprocessInput("(())"));
         var expectedTokens = List.of(
-            new Token.LeftParen(),
-            new Token.LeftParen(),
-            new Token.RightParen(),
-            new Token.RightParen());
+                new Token.LeftParen(),
+                new Token.LeftParen(),
+                new Token.RightParen(),
+                new Token.RightParen());
         assertEquals(expectedTokens, actualTokens);
     }
 
@@ -23,8 +23,8 @@ public class TokenizerTest {
     void getQuote() {
         var actualTokens = Tokenizer.tokenize(Utils.preprocessInput("'abc"));
         var expectedTokens = List.of(
-            new Token.Quote(),
-            new Token.Symbol("abc"));
+                new Token.Quote(),
+                new Token.Symbol("abc"));
         assertEquals(expectedTokens, actualTokens);
     }
 
@@ -32,9 +32,9 @@ public class TokenizerTest {
     void getSymbol() {
         var actualTokens = Tokenizer.tokenize(Utils.preprocessInput("a b c"));
         var expectedTokens = List.of(
-            new Token.Symbol("a"),
-            new Token.Symbol("b"),
-            new Token.Symbol("c"));
+                new Token.Symbol("a"),
+                new Token.Symbol("b"),
+                new Token.Symbol("c"));
         assertEquals(expectedTokens, actualTokens);
     }
 }

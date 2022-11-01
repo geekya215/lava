@@ -22,13 +22,13 @@ public class Main {
         var ctx = new ReplContext(Path.of(""));
         try {
             var terminal = TerminalBuilder.builder()
-                .jansi(true)
-                .jna(false)
-                .build();
+                    .jansi(true)
+                    .jna(false)
+                    .build();
             var lineReader = LineReaderBuilder.builder()
-                .terminal(terminal)
-                .completer(new ArgumentCompleter(new StringsCompleter("load"), new FileNameCompleter(), NullCompleter.INSTANCE))
-                .build();
+                    .terminal(terminal)
+                    .completer(new ArgumentCompleter(new StringsCompleter("load"), new FileNameCompleter(), NullCompleter.INSTANCE))
+                    .build();
             repl = new JLineRepl(io, prompt, ctx, lineReader);
         } catch (IOException e) {
             repl = new PlainRepl(io, prompt, ctx);

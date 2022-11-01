@@ -6,7 +6,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public sealed interface Expr permits
-    Expr.Number, Expr.Symbol, Expr.Quote, Expr.List, Expr.Lambda, Expr.BuiltinLambda, Expr.Macro {
+        Expr.Number, Expr.Symbol, Expr.Quote, Expr.List, Expr.Lambda, Expr.BuiltinLambda, Expr.Macro {
     record Number(Integer value) implements Expr {
         @Override
         public String toString() {

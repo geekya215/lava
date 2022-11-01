@@ -1,9 +1,12 @@
 package io.geekya215.lava.repl;
 
-import io.geekya215.lava.*;
+import io.geekya215.lava.Command;
+import io.geekya215.lava.Parser;
+import io.geekya215.lava.Tokenizer;
 import io.geekya215.lava.adt.Expr;
 import io.geekya215.lava.exception.EvalException;
 import io.geekya215.lava.exception.ParserException;
+import io.geekya215.lava.interpreter.Interpreter;
 import io.geekya215.lava.utils.Ref;
 import io.geekya215.lava.utils.Utils;
 import org.jline.reader.UserInterruptException;
@@ -16,7 +19,6 @@ public abstract class Repl {
     protected final IO io;
     protected final String prompt;
     private final ReplContext ctx;
-    private final Env env = Env.extend(Interpreter.initialStandardEnv());
 
     public Repl(IO io, String prompt, ReplContext ctx) {
         this.io = io;
@@ -59,7 +61,7 @@ public abstract class Repl {
                     if (input.isBlank()) {
                         continue;
                     }
-                    result = eval(input, env);
+                    result = eval(input);
                 }
                 io.println(result);
             } catch (UserInterruptException e) {
@@ -88,15 +90,15 @@ public abstract class Repl {
                 if (input.isBlank()) {
                     continue;
                 }
-                result = eval(input, env);
+                result = eval(input);
             }
             return result;
         }
     }
 
-    private Expr eval(String input, Env env) {
+    private Expr eval(String input) {
         var tokens = Tokenizer.tokenize(input);
         var expr = Parser.parse(new Ref<>(tokens));
-        return Interpreter.eval(expr, env);
+        return Interpreter.eval(expr);
     }
 }

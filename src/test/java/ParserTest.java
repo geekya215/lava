@@ -1,4 +1,5 @@
-import io.geekya215.lava.*;
+import io.geekya215.lava.Parser;
+import io.geekya215.lava.Tokenizer;
 import io.geekya215.lava.adt.Expr;
 import io.geekya215.lava.utils.Ref;
 import io.geekya215.lava.utils.Utils;

@@ -21,8 +21,8 @@ public class Env {
 
     public static Env extend(Env parent) {
         return new Env(
-            Optional.of(parent),
-            new HashMap<>()
+                Optional.of(parent),
+                new HashMap<>()
         );
     }
 
