@@ -8,7 +8,7 @@ import io.geekya215.lava.exception.EvalException;
 import io.geekya215.lava.exception.ParserException;
 import io.geekya215.lava.interpreter.Interpreter;
 import io.geekya215.lava.utils.Ref;
-import io.geekya215.lava.utils.Utils;
+import io.geekya215.lava.utils.CommonUtil;
 import org.jline.reader.UserInterruptException;
 
 import java.io.FileNotFoundException;
@@ -57,7 +57,7 @@ public abstract class Repl {
                     result = evalFromFile();
                 } else {
                     // preprocess input to ignore comments
-                    var input = Utils.preprocessInput(x);
+                    var input = CommonUtil.preprocessInput(x);
                     if (input.isBlank()) {
                         continue;
                     }
@@ -86,7 +86,7 @@ public abstract class Repl {
             Expr result = null;
             while (sc.hasNext()) {
                 var x = sc.nextLine();
-                var input = Utils.preprocessInput(x);
+                var input = CommonUtil.preprocessInput(x);
                 if (input.isBlank()) {
                     continue;
                 }

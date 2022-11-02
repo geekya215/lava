@@ -5,8 +5,8 @@ import io.geekya215.lava.adt.Expr;
 import java.util.ArrayList;
 import java.util.List;
 
-public final class Utils {
-    private Utils() {
+public final class CommonUtil {
+    private CommonUtil() {
     }
 
     public static String preprocessInput(String input) {

@@ -3,7 +3,7 @@ import io.geekya215.lava.Tokenizer;
 import io.geekya215.lava.adt.Expr;
 import io.geekya215.lava.interpreter.Interpreter;
 import io.geekya215.lava.utils.Ref;
-import io.geekya215.lava.utils.Utils;
+import io.geekya215.lava.utils.CommonUtil;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -13,7 +13,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class InterpreterTest {
 
     Expr getExpr(String input) {
-        var tokens = Tokenizer.tokenize(Utils.preprocessInput(input));
+        var tokens = Tokenizer.tokenize(CommonUtil.preprocessInput(input));
         return Parser.parse(new Ref<>(tokens));
     }
 

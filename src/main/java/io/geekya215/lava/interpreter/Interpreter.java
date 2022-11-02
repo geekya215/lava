@@ -4,7 +4,7 @@ import io.geekya215.lava.Env;
 import io.geekya215.lava.adt.Expr;
 import io.geekya215.lava.exception.EvalException;
 import io.geekya215.lava.utils.ExprUtil;
-import io.geekya215.lava.utils.Utils;
+import io.geekya215.lava.utils.CommonUtil;
 
 import java.util.*;
 import java.util.function.BiPredicate;
@@ -282,7 +282,7 @@ public class Interpreter {
                     if (body instanceof Expr.Symbol && map.containsKey(body)) {
                         res = map.get(body);
                     } else if (body instanceof Expr.List l) {
-                        var expand = Utils.deepCopyExprList(l.value());
+                        var expand = CommonUtil.deepCopyExprList(l.value());
                         expandMacro(map, expand);
                         res = new Expr.List(expand);
                     }
