@@ -1,6 +1,5 @@
 package io.geekya215.lava.utils;
 
-import io.geekya215.lava.Constants;
 import io.geekya215.lava.adt.Expr;
 import io.geekya215.lava.exception.EvalException;
 
@@ -35,9 +34,5 @@ public final class ExprUtil {
             case Expr.Number n -> n.value();
             default -> throw new EvalException("expected number value, got " + e);
         };
-    }
-
-    public static Expr getBooleanSymbol(Boolean b) {
-        return b ? Constants.TRUE : Constants.FALSE;
     }
 }

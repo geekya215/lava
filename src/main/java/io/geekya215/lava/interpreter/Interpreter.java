@@ -1,6 +1,5 @@
 package io.geekya215.lava.interpreter;
 
-import io.geekya215.lava.Constants;
 import io.geekya215.lava.Env;
 import io.geekya215.lava.adt.Expr;
 import io.geekya215.lava.exception.EvalException;
@@ -12,15 +11,19 @@ import java.util.function.BiPredicate;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
 
-import static io.geekya215.lava.utils.ExprUtil.*;
+import static io.geekya215.lava.utils.ExprUtil.matchList;
+import static io.geekya215.lava.utils.ExprUtil.matchSymbol;
 
 public class Interpreter {
+    private static final Expr TRUE = new Expr.Symbol("#t");
+    private static final Expr FALSE = new Expr.Symbol("#f");
+
     private static final Env builtinEnv = new Env();
     private static final Env runtimeEnv;
 
     static {
-        builtinEnv.set("#t", Constants.TRUE);
-        builtinEnv.set("#f", Constants.FALSE);
+        builtinEnv.set("#t", TRUE);
+        builtinEnv.set("#f", FALSE);
 
         builtinEnv.set(Operators.PLUS, new Expr.BuiltinLambda(
                 "+",
@@ -66,7 +69,7 @@ public class Interpreter {
                 "=",
                 args -> {
                     if (args.size() == 2) {
-                        return getBooleanSymbol(Objects.equals(args.get(0), args.get(1)));
+                        return Objects.equals(args.get(0), args.get(1)) ? TRUE : FALSE;
                     }
                     throw new EvalException("expected 2 args");
                 }, builtinEnv));
@@ -162,7 +165,7 @@ public class Interpreter {
                             throw new EvalException("invalid usage of 'cond'");
                         }
                     }
-                    yield Constants.FALSE;
+                    yield FALSE;
                 }
 
                 if (matchSymbol(head, Keywords.DEFINE)) {
@@ -213,9 +216,9 @@ public class Interpreter {
                         if (arg instanceof Expr.Number
                                 || arg instanceof Expr.Symbol
                                 || matchList(arg, 0)) {
-                            yield Constants.TRUE;
+                            yield TRUE;
                         } else {
-                            yield Constants.FALSE;
+                            yield FALSE;
                         }
                     } else {
                         throw new EvalException("invalid usage of 'atom?'");
@@ -270,7 +273,7 @@ public class Interpreter {
                 var params = macro.params();
                 var body = macro.body();
                 var map = new HashMap<Expr, Expr>();
-                var res = Constants.FALSE;
+                var res = FALSE;
 
                 if (params.size() == args.size()) {
                     for (int i = 0; i < params.size(); i++) {
@@ -316,7 +319,7 @@ public class Interpreter {
     private static Function<List<Expr>, Expr> applyComparator(BiPredicate<Integer, Integer> predicate) {
         return args -> {
             if (args.size() == 2 && args.get(0) instanceof Expr.Number left && args.get(1) instanceof Expr.Number right) {
-                return getBooleanSymbol(predicate.test(left.value(), right.value()));
+                return predicate.test(left.value(), right.value()) ? TRUE : FALSE;
             } else {
                 throw new EvalException("expected 2 args of number type");
             }
