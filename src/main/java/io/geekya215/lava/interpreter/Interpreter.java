@@ -15,15 +15,18 @@ import static io.geekya215.lava.utils.ExprUtil.matchList;
 import static io.geekya215.lava.utils.ExprUtil.matchSymbol;
 
 public class Interpreter {
-    private static final Expr TRUE = new Expr.Symbol("#t");
-    private static final Expr FALSE = new Expr.Symbol("#f");
+
+    private static final class BuiltinValue {
+        private static final Expr TRUE = new Expr.Symbol("#t");
+        private static final Expr FALSE = new Expr.Symbol("#f");
+    }
 
     private static final Env builtinEnv = new Env();
     private static final Env runtimeEnv;
 
     static {
-        builtinEnv.set("#t", TRUE);
-        builtinEnv.set("#f", FALSE);
+        builtinEnv.set("#t", BuiltinValue.TRUE);
+        builtinEnv.set("#f", BuiltinValue.FALSE);
 
         builtinEnv.set(Operators.PLUS, new Expr.BuiltinLambda(
                 "+",
@@ -69,7 +72,7 @@ public class Interpreter {
                 "=",
                 args -> {
                     if (args.size() == 2) {
-                        return Objects.equals(args.get(0), args.get(1)) ? TRUE : FALSE;
+                        return Objects.equals(args.get(0), args.get(1)) ? BuiltinValue.TRUE : BuiltinValue.FALSE;
                     }
                     throw new EvalException("expected 2 args");
                 }, builtinEnv));
@@ -165,7 +168,7 @@ public class Interpreter {
                             throw new EvalException("invalid usage of 'cond'");
                         }
                     }
-                    yield FALSE;
+                    yield BuiltinValue.FALSE;
                 }
 
                 if (matchSymbol(head, Keywords.DEFINE)) {
@@ -216,9 +219,9 @@ public class Interpreter {
                         if (arg instanceof Expr.Number
                                 || arg instanceof Expr.Symbol
                                 || matchList(arg, 0)) {
-                            yield TRUE;
+                            yield BuiltinValue.TRUE;
                         } else {
-                            yield FALSE;
+                            yield BuiltinValue.FALSE;
                         }
                     } else {
                         throw new EvalException("invalid usage of 'atom?'");
@@ -273,7 +276,7 @@ public class Interpreter {
                 var params = macro.params();
                 var body = macro.body();
                 var map = new HashMap<Expr, Expr>();
-                var res = FALSE;
+                var res = BuiltinValue.FALSE;
 
                 if (params.size() == args.size()) {
                     for (int i = 0; i < params.size(); i++) {
@@ -319,7 +322,7 @@ public class Interpreter {
     private static Function<List<Expr>, Expr> applyComparator(BiPredicate<Integer, Integer> predicate) {
         return args -> {
             if (args.size() == 2 && args.get(0) instanceof Expr.Number left && args.get(1) instanceof Expr.Number right) {
-                return predicate.test(left.value(), right.value()) ? TRUE : FALSE;
+                return predicate.test(left.value(), right.value()) ? BuiltinValue.TRUE : BuiltinValue.FALSE;
             } else {
                 throw new EvalException("expected 2 args of number type");
             }
