@@ -2,8 +2,8 @@ import io.geekya215.lava.Parser;
 import io.geekya215.lava.Tokenizer;
 import io.geekya215.lava.adt.Expr;
 import io.geekya215.lava.interpreter.Interpreter;
-import io.geekya215.lava.utils.Ref;
 import io.geekya215.lava.utils.CommonUtil;
+import io.geekya215.lava.utils.Ref;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -333,6 +333,24 @@ public class InterpreterTest {
                 """);
         var actualResult = Interpreter.eval(expr);
         var expectedResult = new Expr.Number(3);
+        assertEquals(expectedResult, actualResult);
+    }
+
+    @Test
+    void patternMatchTest() {
+        var expr = getExpr("""
+                (begin
+                    (define a '(1 2 3 4))
+                    (match a (
+                        (a 1)
+                        ((1 2) 3)
+                        ((1 2 3) (cons 0 a))
+                        (_ 11)
+                    ))
+                )
+                """);
+        var actualResult = Interpreter.eval(expr);
+        var expectedResult = new Expr.Number(11);
         assertEquals(expectedResult, actualResult);
     }
 }

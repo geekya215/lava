@@ -3,8 +3,8 @@ package io.geekya215.lava.interpreter;
 import io.geekya215.lava.Env;
 import io.geekya215.lava.adt.Expr;
 import io.geekya215.lava.exception.EvalException;
-import io.geekya215.lava.utils.ExprUtil;
 import io.geekya215.lava.utils.CommonUtil;
+import io.geekya215.lava.utils.ExprUtil;
 
 import java.util.*;
 import java.util.function.BiPredicate;
@@ -15,11 +15,6 @@ import static io.geekya215.lava.utils.ExprUtil.matchList;
 import static io.geekya215.lava.utils.ExprUtil.matchSymbol;
 
 public class Interpreter {
-
-    private static final class BuiltinValue {
-        private static final Expr TRUE = new Expr.Symbol("#t");
-        private static final Expr FALSE = new Expr.Symbol("#f");
-    }
 
     private static final Env builtinEnv = new Env();
     private static final Env runtimeEnv;
@@ -158,7 +153,7 @@ public class Interpreter {
                         if (matchList(cond, 2)) {
                             var test = ((Expr.List) cond).value().get(0);
                             var action = ((Expr.List) cond).value().get(1);
-                            if (matchSymbol(test, "else")) {
+                            if (matchSymbol(test, Keywords.ELSE)) {
                                 yield eval(action, env);
                             }
                             if (ExprUtil.testExpr(eval(test, env))) {
@@ -169,6 +164,28 @@ public class Interpreter {
                         }
                     }
                     yield BuiltinValue.FALSE;
+                }
+
+
+                // Todo
+                // support struct match later
+                if (matchSymbol(head, Keywords.MATCH)) {
+                    if (size == 3 && _l.get(2) instanceof Expr.List p) {
+                        var e = eval(_l.get(1), env);
+                        var patterns = p.value();
+                        for (var pattern : patterns) {
+                            if (matchList(pattern, 2)) {
+                                var _p = ((Expr.List) pattern).value();
+                                if (Objects.equals(e, _p.get(0)) || matchSymbol(_p.get(0), Keywords.UNDERSCORE)) {
+                                    yield eval(_p.get(1), env);
+                                }
+                            } else {
+                                throw new EvalException("invalid usage of 'match'");
+                            }
+                        }
+                    } else {
+                        throw new EvalException("invalid usage of 'match'");
+                    }
                 }
 
                 if (matchSymbol(head, Keywords.DEFINE)) {
@@ -327,5 +344,10 @@ public class Interpreter {
                 throw new EvalException("expected 2 args of number type");
             }
         };
+    }
+
+    private static final class BuiltinValue {
+        private static final Expr TRUE = new Expr.Symbol("#t");
+        private static final Expr FALSE = new Expr.Symbol("#f");
     }
 }
