@@ -1,8 +1,8 @@
 package io.geekya215.lava.repl;
 
 public class PlainRepl extends Repl {
-    public PlainRepl(IO io, String prompt, ReplContext ctx) {
-        super(io, prompt, ctx);
+    public PlainRepl(IO io, ReplContext ctx) {
+        super(io, ctx);
     }
 
     @Override

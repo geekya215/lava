@@ -17,12 +17,10 @@ import java.util.Scanner;
 
 public abstract class Repl {
     protected final IO io;
-    protected final String prompt;
     private final ReplContext ctx;
 
-    public Repl(IO io, String prompt, ReplContext ctx) {
+    public Repl(IO io, ReplContext ctx) {
         this.io = io;
-        this.prompt = prompt;
         this.ctx = ctx;
     }
 
@@ -39,7 +37,7 @@ public abstract class Repl {
         Expr result = null;
         while (true) {
             try {
-                var x = readLine(prompt + "> ");
+                var x = readLine(ctx.getPrompt() + "> ");
                 // skip blank input
                 if (x.isBlank()) {
                     continue;
@@ -63,7 +61,7 @@ public abstract class Repl {
                     }
                     result = eval(input);
                 }
-                io.println(result);
+                io.println(ctx.getIndicator() + " " + result);
             } catch (UserInterruptException e) {
                 io.println("\nuser interrupt");
                 System.exit(1);

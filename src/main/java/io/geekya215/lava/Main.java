@@ -18,7 +18,6 @@ public class Main {
     public static void main(String[] args) {
         Repl repl = null;
         var io = new IO(new Scanner(new BufferedInputStream(System.in)), new PrintWriter(System.out), new PrintWriter(System.err));
-        var prompt = "lava";
         var ctx = new ReplContext(Path.of(""));
         try {
             var terminal = TerminalBuilder.builder()
@@ -29,9 +28,9 @@ public class Main {
                     .terminal(terminal)
                     .completer(new ArgumentCompleter(new StringsCompleter("load"), new FileNameCompleter(), NullCompleter.INSTANCE))
                     .build();
-            repl = new JLineRepl(io, prompt, ctx, lineReader);
+            repl = new JLineRepl(io, ctx, lineReader);
         } catch (IOException e) {
-            repl = new PlainRepl(io, prompt, ctx);
+            repl = new PlainRepl(io, ctx);
         }
         repl.start();
     }
