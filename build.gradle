@@ -5,7 +5,7 @@ plugins {
 }
 
 group 'io.geekya215'
-version '1.0'
+version '1.0.3'
 
 repositories {
     mavenCentral()
@@ -36,7 +36,7 @@ tasks.withType(Test) {
 
 jar {
     manifest {
-        attributes('Main-Class': 'io.geekya215.lava.Lava')
+        attributes('Main-Class': 'io.geekya215.lava.Main')
     }
 }
 
@@ -44,7 +44,7 @@ graalvmNative {
     binaries {
         main {
             imageName = 'lava'
-            mainClass = 'io.geekya215.lava.Lava'
+            mainClass = 'io.geekya215.lava.Main'
             verbose = true
             buildArgs.add("-J--enable-preview")
         }
