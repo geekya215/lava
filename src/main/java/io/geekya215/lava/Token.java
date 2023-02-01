@@ -1,8 +1,7 @@
-package io.geekya215.lava.adt;
+package io.geekya215.lava;
 
 public sealed interface Token permits
-        Token.Symbol, Token.Quote,
-        Token.LeftParen, Token.RightParen {
+    Token.Symbol, Token.Quote, Token.LeftParen, Token.RightParen {
     record Symbol(String value) implements Token {
         @Override
         public String toString() {

@@ -1,6 +1,6 @@
 package io.geekya215.lava.interpreter;
 
-public final class Operators {
+public final class NativeFunctions {
     public static final String PLUS = "+";
     public static final String MINUS = "-";
     public static final String MUL = "*";

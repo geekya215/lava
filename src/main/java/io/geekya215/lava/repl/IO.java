@@ -1,36 +1,24 @@
 package io.geekya215.lava.repl;
 
+import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.io.Writer;
 import java.util.Scanner;
 
-public class IO {
-    private final Scanner scanner;
-    private final PrintWriter out;
-    private final PrintWriter err;
+public record IO(
+    Scanner scanner,
+    PrintWriter out,
+    PrintWriter err
+) {
+    public static final IO STDIO = new IO(new InputStreamReader(System.in), new PrintWriter(System.out), new PrintWriter(System.err));
 
-    public IO(Scanner scanner, PrintWriter out, PrintWriter err) {
-        this.scanner = scanner;
-        this.out = out;
-        this.err = err;
+    public IO(Readable input, Writer out, Writer err) {
+        this(new Scanner(input), new PrintWriter(out), new PrintWriter(err));
     }
 
     public String readLine(String prompt) {
-        print(prompt);
+        out.print(prompt);
+        out.flush();
         return scanner.nextLine();
-    }
-
-    public void print(Object x) {
-        out.print(x);
-        out.flush();
-    }
-
-    public void println(Object x) {
-        out.println(x);
-        out.flush();
-    }
-
-    public void error(String e) {
-        err.println(e);
-        err.flush();
     }
 }

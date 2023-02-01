@@ -1,12 +1,11 @@
-package io.geekya215.lava.adt;
+package io.geekya215.lava;
 
-import io.geekya215.lava.Env;
 
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public sealed interface Expr permits
-        Expr.Number, Expr.Symbol, Expr.Quote, Expr.List, Expr.Lambda, Expr.BuiltinLambda, Expr.Macro {
+    Expr.Number, Expr.Symbol, Expr.Quote, Expr.List, Expr.Lambda, Expr.NativeFunc, Expr.Macro {
     record Number(Integer value) implements Expr {
         @Override
         public String toString() {
@@ -35,7 +34,7 @@ public sealed interface Expr permits
         }
     }
 
-    record Lambda(java.util.List<String> params, Expr body, Env env) implements Expr {
+    record Lambda(java.util.List<String> params, Expr body, Env closure) implements Expr {
         @Override
         public String toString() {
             var formattedParams = String.join(" ", params);
@@ -43,17 +42,17 @@ public sealed interface Expr permits
         }
     }
 
-    record BuiltinLambda(String name, Function<java.util.List<Expr>, Expr> func, Env env) implements Expr {
+    record NativeFunc(String name, Function<java.util.List<Expr>, Expr> func, Env env) implements Expr {
         @Override
         public String toString() {
-            return "#<procedure " + name + ">";
+            return "<native " + name + ">";
         }
     }
 
-    record Macro(java.util.List<Expr> params, Expr body, Env env) implements Expr {
+    record Macro(java.util.List<String> params, Expr body, Env closure) implements Expr {
         @Override
         public String toString() {
-            var formattedParams = String.join(" ", params.toString());
+            var formattedParams = String.join(" ", params);
             return "(marco (" + formattedParams + ") " + body.toString() + ")";
         }
     }

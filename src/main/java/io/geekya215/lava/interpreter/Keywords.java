@@ -10,7 +10,5 @@ public final class Keywords {
     public static final String QUOTE = "quote";
     public static final String DEFINE = "define";
     public static final String LAMBDA = "lambda";
-    public static final String DEFMACRO = "defmacro";
-
-    public static final String ATOM = "atom?";
+    public static final String MACRO = "macro";
 }
