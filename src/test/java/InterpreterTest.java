@@ -295,7 +295,7 @@ public class InterpreterTest {
     void defineMarcoAndExpand() {
         var expr = getExpr("""
             (begin
-                (macro defun (name args body) (list 'define name (list 'lambda args body)))
+                (define defun (macro (name args body) (list 'define name (list 'lambda args body))))
                 (defun 'plus '(a b) '(+ a b))
                 (plus 1 2))
             """);
@@ -319,6 +319,14 @@ public class InterpreterTest {
             """);
         var actualResult = Interpreter.eval(expr);
         var expectedResult = new Expr.Number(11);
+        assertEquals(expectedResult, actualResult);
+    }
+
+    @Test
+    void evalQuoteListPlusOneTwo() {
+        var expr = getExpr("(eval '(+ 1 2))");
+        var actualResult = Interpreter.eval(expr);
+        var expectedResult = new Expr.Number(3);
         assertEquals(expectedResult, actualResult);
     }
 }

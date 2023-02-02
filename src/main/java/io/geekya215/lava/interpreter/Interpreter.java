@@ -165,6 +165,14 @@ public class Interpreter {
                         }
                     }
 
+                    if (Objects.equals(symbolName, Keywords.EVAL)) {
+                        if (size == 2) {
+                            yield eval(eval(tail.get(0), env), env);
+                        } else {
+                            throw new EvalException("invalid usage of 'eval'");
+                        }
+                    }
+
                     if (Objects.equals(symbolName, Keywords.QUOTE)) {
                         if (size == 2) {
                             yield tail.get(0);
@@ -190,9 +198,8 @@ public class Interpreter {
                     }
 
                     if (Objects.equals(symbolName, Keywords.MACRO)) {
-                        if (size == 4
-                            && tail.get(0) instanceof Expr.Symbol s
-                            && tail.get(1) instanceof Expr.List _params
+                        if (size == 3
+                            && tail.get(0) instanceof Expr.List _params
                             && _params.value().stream().allMatch(p -> p instanceof Expr.Symbol)) {
                             var params = _params.value().stream().map(p -> {
                                 if (p instanceof Expr.Symbol _p) {
@@ -201,10 +208,8 @@ public class Interpreter {
                                     throw new EvalException("expected symbol value, got " + p);
                                 }
                             }).toList();
-                            var body = tail.get(2);
-                            var macro = new Expr.Macro(params, body, env);
-                            env.set(s.value(), macro);
-                            yield macro;
+                            var body = tail.get(1);
+                            yield new Expr.Macro(params, body, env);
                         } else {
                             throw new EvalException("invalid usage of 'macro'");
                         }

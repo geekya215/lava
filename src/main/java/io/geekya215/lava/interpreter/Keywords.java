@@ -9,6 +9,7 @@ public final class Keywords {
 
     public static final String QUOTE = "quote";
     public static final String DEFINE = "define";
+    public static final String EVAL = "eval";
     public static final String LAMBDA = "lambda";
     public static final String MACRO = "macro";
 }
