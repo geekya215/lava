@@ -51,10 +51,9 @@ public class Interpreter {
         }, nativeEnv));
 
         nativeEnv.set(NativeFunctions.CONS, new Expr.NativeFunc("cons", args -> {
-            if (args.size() == 2 && args.get(1) instanceof Expr.List l) {
-                var _l = l.value();
-                var res = new ArrayList<>(_l);
-                res.add(0, args.get(0));
+            if (args.size() == 2 && args.get(1) instanceof Expr.List(List<Expr> l)) {
+                var res = new ArrayList<>(l);
+                res.addFirst(args.get(0));
                 return new Expr.List(res);
             }
             throw new EvalException("invalid use of 'cons'");
@@ -81,16 +80,12 @@ public class Interpreter {
         return switch (expr) {
             case Expr.Quote quote -> quote.expr();
             case Expr.Number number -> number;
-            case Expr.Symbol symbol -> {
-                var name = symbol.value();
+            case Expr.Symbol(String name) -> {
                 yield env
                     .get(name)
-                    .orElseThrow(() -> {
-                        throw new EvalException("attempted to access undefined variable: " + name);
-                    });
+                    .orElseThrow(() -> new EvalException("attempted to access undefined variable: " + name));
             }
-            case Expr.List l -> {
-                var list = l.value();
+            case Expr.List(List<Expr> list) -> {
                 // Todo
                 // change to immutable list
                 if (list.isEmpty()) {
@@ -102,8 +97,8 @@ public class Interpreter {
                 var tail = list.subList(1, size);
 
                 // eval keyword
-                if (head instanceof Expr.Symbol sym) {
-                    var symbolName = sym.value();
+                if (head instanceof Expr.Symbol(String symbolName)) {
+//                    var symbolName = sym.value();
 
                     if (Objects.equals(symbolName, Keywords.IF)) {
                         if (size == 4) {
@@ -118,10 +113,10 @@ public class Interpreter {
 
                     if (Objects.equals(symbolName, Keywords.COND)) {
                         for (var branch : tail) {
-                            if (branch instanceof Expr.List _l && _l.value().size() == 2) {
-                                var condition = _l.value().get(0);
-                                var then = _l.value().get(1);
-                                if (condition instanceof Expr.Symbol s && Objects.equals(s.value(), Keywords.ELSE)) {
+                            if (branch instanceof Expr.List(List<Expr> l) && l.size() == 2) {
+                                var condition = l.get(0);
+                                var then = l.get(1);
+                                if (condition instanceof Expr.Symbol(String s) && Objects.equals(s, Keywords.ELSE)) {
                                     yield eval(then, env);
                                 }
 
@@ -136,14 +131,12 @@ public class Interpreter {
                     }
 
                     if (Objects.equals(symbolName, Keywords.MATCH)) {
-                        if (size == 3 && tail.get(1) instanceof Expr.List m) {
+                        if (size == 3 && tail.get(1) instanceof Expr.List(List<Expr> patterns)) {
                             var e = eval(tail.get(0), env);
-                            var patterns = m.value();
                             for (var pattern : patterns) {
-                                if (pattern instanceof Expr.List _p && _p.value().size() == 2) {
-                                    var p = _p.value();
+                                if (pattern instanceof Expr.List(List<Expr> p) && p.size() == 2) {
                                     if (Objects.equals(p.get(0), e)
-                                        || (p.get(0) instanceof Expr.Symbol d && Objects.equals(d.value(), Keywords.UNDERSCORE))) {
+                                        || (p.get(0) instanceof Expr.Symbol(String d) && Objects.equals(d, Keywords.UNDERSCORE))) {
                                         yield eval(p.get(1), env);
                                     }
                                 } else {
@@ -156,9 +149,9 @@ public class Interpreter {
                     }
 
                     if (Objects.equals(symbolName, Keywords.DEFINE)) {
-                        if (size == 3 && tail.get(0) instanceof Expr.Symbol s) {
+                        if (size == 3 && tail.get(0) instanceof Expr.Symbol(String s)) {
                             var value = eval(tail.get(1), env);
-                            env.set(s.value(), value);
+                            env.set(s, value);
                             yield value;
                         } else {
                             throw new EvalException("invalid usage of 'define'");
@@ -182,10 +175,10 @@ public class Interpreter {
                     }
 
                     if (Objects.equals(symbolName, Keywords.LAMBDA)) {
-                        if (size == 3 && tail.get(0) instanceof Expr.List _params) {
-                            var params = _params.value().stream().map(p -> {
-                                if (p instanceof Expr.Symbol _p) {
-                                    return _p.value();
+                        if (size == 3 && tail.get(0) instanceof Expr.List(List<Expr> raw)) {
+                            var params = raw.stream().map(p -> {
+                                if (p instanceof Expr.Symbol(String s)) {
+                                    return s;
                                 } else {
                                     throw new EvalException("expected symbol value, got " + p);
                                 }
@@ -199,11 +192,11 @@ public class Interpreter {
 
                     if (Objects.equals(symbolName, Keywords.MACRO)) {
                         if (size == 3
-                            && tail.get(0) instanceof Expr.List _params
-                            && _params.value().stream().allMatch(p -> p instanceof Expr.Symbol)) {
-                            var params = _params.value().stream().map(p -> {
-                                if (p instanceof Expr.Symbol _p) {
-                                    return _p.value();
+                            && tail.get(0) instanceof Expr.List(List<Expr> raw)
+                            && raw.stream().allMatch(p -> p instanceof Expr.Symbol)) {
+                            var params = raw.stream().map(p -> {
+                                if (p instanceof Expr.Symbol(String s)) {
+                                    return s;
                                 } else {
                                     throw new EvalException("expected symbol value, got " + p);
                                 }
@@ -232,15 +225,14 @@ public class Interpreter {
 
     private static Expr application(Expr expr, String name, List<Expr> args, Env env) {
         return switch (expr) {
-            case Expr.Lambda lambda -> {
-                var params = lambda.params();
+            case Expr.Lambda(List<String> params, Expr body, Env closure) -> {
                 var substitutedArgs = args.stream().map(e -> eval(e, env)).toList();
-                var newEnv = Env.extend(lambda.closure());
+                var newEnv = Env.extend(closure);
                 if (params.size() == substitutedArgs.size()) {
                     for (int i = 0; i < params.size(); i++) {
                         newEnv.set(params.get(i), substitutedArgs.get(i));
                     }
-                    yield eval(lambda.body(), newEnv);
+                    yield eval(body, newEnv);
                 } else {
                     throw new EvalException("called function "
                         + name
@@ -251,15 +243,14 @@ public class Interpreter {
                         + " argument(s)");
                 }
             }
-            case Expr.Macro macro -> {
-                var params = macro.params();
+            case Expr.Macro(List<String> params, Expr body, Env closure) -> {
                 var substitutedArgs = args.stream().map(e -> eval(e, env)).toList();
-                var newEnv = Env.extend(macro.closure());
+                var newEnv = Env.extend(closure);
                 if (params.size() == substitutedArgs.size()) {
                     for (int i = 0; i < params.size(); i++) {
                         newEnv.set(params.get(i), substitutedArgs.get(i));
                     }
-                    var expand = eval(macro.body(), newEnv);
+                    var expand = eval(body, newEnv);
                     yield eval(expand, env);
                 } else {
                     throw new EvalException("called macro "
@@ -281,15 +272,15 @@ public class Interpreter {
 
     private static Function<List<Expr>, Expr> applyArithmetic(BinaryOperator<Integer> func) {
         return args -> new Expr.Number(args.stream().map(e -> switch (e) {
-            case Expr.Number n -> n.value();
+            case Expr.Number(Integer n) -> n;
             default -> throw new EvalException("expected number value, got " + e);
         }).reduce(func).orElse(0));
     }
 
     private static Function<List<Expr>, Expr> applyComparator(BiPredicate<Integer, Integer> predicate) {
         return args -> {
-            if (args.size() == 2 && args.get(0) instanceof Expr.Number left && args.get(1) instanceof Expr.Number right) {
-                return predicate.test(left.value(), right.value()) ? BuiltinValue.TRUE : BuiltinValue.FALSE;
+            if (args.size() == 2 && args.get(0) instanceof Expr.Number(Integer left) && args.get(1) instanceof Expr.Number(Integer right)) {
+                return predicate.test(left, right) ? BuiltinValue.TRUE : BuiltinValue.FALSE;
             } else {
                 throw new EvalException("expected 2 args of number type");
             }

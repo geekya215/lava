@@ -1,6 +1,6 @@
 package io.geekya215.lava;
 
-public class Ref<T> {
+public final class Ref<T> {
     private T value;
 
     private Ref() {
@@ -10,8 +10,8 @@ public class Ref<T> {
         this.value = value;
     }
 
-    public static <T> Ref<T> of(T value) {
-        return new Ref(value);
+    public static <T> Ref<T> wrap(T value) {
+        return new Ref<>(value);
     }
 
     public T unwrap() {

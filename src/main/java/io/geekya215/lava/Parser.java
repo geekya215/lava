@@ -18,15 +18,15 @@ public class Parser {
         var tail = _tokens.subList(1, _tokens.size());
 
         return switch (head) {
-            case Token.Quote quote -> {
+            case Token.Quote _ -> {
                 tokens.update(tail);
                 yield new Expr.Quote(parse(tokens));
             }
-            case Token.LeftParen leftParen -> {
+            case Token.LeftParen _ -> {
                 tokens.update(tail);
                 yield parseList(tokens, new ArrayList<>());
             }
-            case Token.RightParen rightParen -> throw new ParserException("unexpected )");
+            case Token.RightParen _ -> throw new ParserException("unexpected )");
             case Token.Symbol symbol -> {
                 tokens.update(tail);
                 var sym = symbol.value();
@@ -50,14 +50,14 @@ public class Parser {
         var tail = tokens.subList(1, tokens.size());
 
         return switch (head) {
-            case Token.RightParen rightParen -> {
+            case Token.RightParen _ -> {
                 remainTokens.update(tail);
                 Collections.reverse(list);
                 yield new Expr.List(list);
             }
             default -> {
                 var expr = parse(remainTokens);
-                list.add(0, expr);
+                list.addFirst(expr);
                 yield parseList(remainTokens, list);
             }
         };

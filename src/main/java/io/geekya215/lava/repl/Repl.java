@@ -58,7 +58,7 @@ public abstract class Repl {
 
     private Expr eval(String line) {
         var lex = Lexer.tokenize(line);
-        var expr = Parser.parse(Ref.of(lex));
+        var expr = Parser.parse(Ref.wrap(lex));
         return Interpreter.eval(expr);
     }
 }
