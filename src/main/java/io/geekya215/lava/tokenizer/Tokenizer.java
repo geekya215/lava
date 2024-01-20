@@ -2,6 +2,7 @@ package io.geekya215.lava.tokenizer;
 
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -19,7 +20,8 @@ public final class Tokenizer {
 
     public List<LocatedToken> tokenizeWithLocation() {
         List<LocatedToken> tokens = new ArrayList<>();
-        Peekable chars = new Peekable(src);
+        Iterator<Character> iter = src.chars().mapToObj(c -> (char) c).iterator();
+        Peekable<Character> chars = new Peekable<>(iter);
 
         while (nextToken(chars) instanceof Option.Some<Token>(Token tok)) {
             LocatedToken locatedToken = new LocatedToken(tok, new Location(line, col));
@@ -41,7 +43,7 @@ public final class Tokenizer {
         return tokenizeWithLocation().stream().map(LocatedToken::tok).collect(Collectors.toList());
     }
 
-    private Option<Token> nextToken(Peekable chars) {
+    private Option<Token> nextToken(Peekable<Character> chars) {
         return switch (chars.peek()) {
             case Option.Some(Character c) -> switch (c) {
                 case ' ' -> consume(chars, new Token.SpaceChar(new WhiteSpace.Space()));
@@ -68,7 +70,7 @@ public final class Tokenizer {
         };
     }
 
-    private String peekTakeWhite(Peekable chars, Predicate<Character> predicate) {
+    private String peekTakeWhite(Peekable<Character> chars, Predicate<Character> predicate) {
         StringBuilder sb = new StringBuilder();
         while (chars.peek() instanceof Option.Some<Character>(Character c)) {
             if (predicate.test(c)) {
@@ -81,32 +83,8 @@ public final class Tokenizer {
         return sb.toString();
     }
 
-    private Option<Token> consume(Peekable chars, Token token) {
+    private Option<Token> consume(Peekable<Character> chars, Token token) {
         chars.next();
         return Option.some(token);
-    }
-
-    static class Peekable {
-        private final String str;
-        private final int len;
-        private int pos;
-
-        public Peekable(String str) {
-            this.str = str;
-            this.len = str.length();
-            this.pos = -1;
-        }
-
-        public Option<Character> peek() {
-            return pos + 1 < len ? Option.some(str.charAt(pos + 1)) : Option.none();
-        }
-
-        public Option<Character> next() {
-            Option<Character> op = peek();
-            if (op instanceof Option.Some<Character>) {
-                pos += 1;
-            }
-            return op;
-        }
     }
 }
