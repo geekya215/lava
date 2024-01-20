@@ -2,6 +2,7 @@ plugins {
     id 'java'
     id "com.github.johnrengelman.shadow" version "7.1.2"
     id 'org.graalvm.buildtools.native' version '0.9.14'
+    id 'jacoco'
 }
 
 group 'io.geekya215'
@@ -50,3 +51,12 @@ graalvmNative {
         }
     }
 }
+
+jacocoTestReport {
+    reports {
+        xml.required = true
+        html.required = false
+    }
+}
+
+check.dependsOn jacocoTestReport

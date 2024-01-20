@@ -21,7 +21,7 @@ jobs:
         java-version: '21'
         distribution: 'adopt'
     - name: Run test
-      run: ./gradlew test
+      run: ./gradlew check
     - name: Upload coverage reports to Codecov
       uses: codecov/codecov-action@v3
       env:
