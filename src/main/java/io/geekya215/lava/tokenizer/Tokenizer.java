@@ -32,6 +32,7 @@ public final class Tokenizer {
                 case Token.SpaceChar(WhiteSpace.Tab _) -> col += 4;
                 case Token.Number(String v) -> col += v.length();
                 case Token.Symbol(String v) -> col += v.length();
+                case Token.Quote(String v) -> col += (v.length() + 1);
                 default -> col += 1;
             }
         }
@@ -49,7 +50,14 @@ public final class Tokenizer {
                 case ' ' -> consume(chars, new Token.SpaceChar(new WhiteSpace.Space()));
                 case '\t' -> consume(chars, new Token.SpaceChar(new WhiteSpace.Tab()));
                 case '\n' -> consume(chars, new Token.SpaceChar(new WhiteSpace.NewLine()));
-                case '\'' -> consume(chars, new Token.Quote());
+                case '\'' -> {
+                    chars.next();
+                    String s = peekTakeWhite(chars, ch -> Character.isAlphabetic(ch) || Character.isDigit(ch));
+                    if (s.isEmpty()) {
+                        throw new TokenizeException(String.format("invalid quote format at line: %d, column: %d", line, col));
+                    }
+                    yield Option.some(new Token.Quote(s));
+                }
                 case '(' -> consume(chars, new Token.LeftParen());
                 case ')' -> consume(chars, new Token.RightParen());
                 default -> {

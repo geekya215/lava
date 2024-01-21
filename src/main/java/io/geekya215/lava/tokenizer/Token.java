@@ -17,10 +17,10 @@ public sealed interface Token
         }
     }
 
-    record Quote() implements Token {
+    record Quote(String value) implements Token {
         @Override
         public String toString() {
-            return "'";
+            return value;
         }
     }
 
