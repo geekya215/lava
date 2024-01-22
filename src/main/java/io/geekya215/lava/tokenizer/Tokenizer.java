@@ -28,11 +28,21 @@ public final class Tokenizer {
             tokens.add(locatedToken);
 
             switch (tok) {
-                case Token.SpaceChar(WhiteSpace.NewLine _) -> {line+=1; col=1;}
+                case Token.SpaceChar(WhiteSpace.NewLine _) -> {
+                    line += 1;
+                    col = 1;
+                }
                 case Token.SpaceChar(WhiteSpace.Tab _) -> col += 4;
                 case Token.Number(String v) -> col += v.length();
                 case Token.Symbol(String v) -> col += v.length();
                 case Token.Quote(String v) -> col += (v.length() + 1);
+                case Token.Operator(Operators op) -> {
+                    switch (op) {
+                        case Operators.LtEq _, Operators.GtEq _, Operators.NotEq _,
+                                Operators.LeftShift _, Operators.RightShift _ -> col += 2;
+                        default -> col += 1;
+                    }
+                }
                 default -> col += 1;
             }
         }
@@ -50,6 +60,7 @@ public final class Tokenizer {
                 case ' ' -> consume(chars, new Token.SpaceChar(new WhiteSpace.Space()));
                 case '\t' -> consume(chars, new Token.SpaceChar(new WhiteSpace.Tab()));
                 case '\n' -> consume(chars, new Token.SpaceChar(new WhiteSpace.NewLine()));
+
                 case '\'' -> {
                     chars.next();
                     String s = peekTakeWhite(chars, ch -> Character.isAlphabetic(ch) || Character.isDigit(ch));
@@ -58,8 +69,42 @@ public final class Tokenizer {
                     }
                     yield Option.some(new Token.Quote(s));
                 }
+
                 case '(' -> consume(chars, new Token.LeftParen());
                 case ')' -> consume(chars, new Token.RightParen());
+
+                case '+' -> consume(chars, new Token.Operator(new Operators.Plus()));
+                case '-' -> consume(chars, new Token.Operator(new Operators.Minus()));
+                case '*' -> consume(chars, new Token.Operator(new Operators.Mul()));
+                case '/' -> consume(chars, new Token.Operator(new Operators.Div()));
+                case '%' -> consume(chars, new Token.Operator(new Operators.Mod()));
+
+                case '=' -> consume(chars, new Token.Operator(new Operators.Eq()));
+                case '>' -> {
+                    chars.next();
+                    yield switch (chars.peek()) {
+                        case Option.Some(Character ch) -> switch (ch) {
+                            case '=' -> consume(chars, new Token.Operator(new Operators.GtEq()));
+                            case '>' -> consume(chars, new Token.Operator(new Operators.LeftShift()));
+                            default -> Option.some(new Token.Operator(new Operators.Gt()));
+                        };
+                        default -> Option.some(new Token.Operator(new Operators.Gt()));
+                    };
+                }
+                case '<' -> {
+                    chars.next();
+                    yield switch (chars.peek()) {
+                        case Option.Some(Character ch) -> switch (ch) {
+                            case '=' -> consume(chars, new Token.Operator(new Operators.LtEq()));
+                            case '<' -> consume(chars, new Token.Operator(new Operators.RightShift()));
+                            case '>' -> consume(chars, new Token.Operator(new Operators.NotEq()));
+                            default -> Option.some(new Token.Operator(new Operators.Lt()));
+                        };
+                        default -> Option.some(new Token.Operator(new Operators.Lt()));
+                    };
+
+                }
+
                 default -> {
                     if (Character.isDigit(c)) {
                         String s = peekTakeWhite(chars, Character::isDigit);
