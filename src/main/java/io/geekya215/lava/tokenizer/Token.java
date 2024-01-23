@@ -1,7 +1,7 @@
 package io.geekya215.lava.tokenizer;
 
 public sealed interface Token
-        permits Token.EOF, Token.LeftParen, Token.Number, Token.Operator,
+        permits Token.EOF, Token.Keyword, Token.LeftParen, Token.Number, Token.Operator,
         Token.Quote, Token.RightParen, Token.SpaceChar, Token.Symbol {
     record LeftParen() implements Token {
         @Override
@@ -28,6 +28,13 @@ public sealed interface Token
         @Override
         public String toString() {
             return operators.toString();
+        }
+    }
+
+    record Keyword(Keywords keywords) implements Token {
+        @Override
+        public String toString() {
+            return keywords.toString();
         }
     }
 

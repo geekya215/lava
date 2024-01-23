@@ -114,7 +114,21 @@ public final class Tokenizer {
                         yield new Option.Some<>(new Token.Number(s));
                     } else if (Character.isAlphabetic(c)) {
                         String s = peekTakeWhite(chars, ch -> Character.isAlphabetic(ch) || Character.isDigit(ch));
-                        yield new Option.Some<>(new Token.Symbol(s));
+                        Token tok = switch (s) {
+                            // keywords are case-sensitive
+                            case "DEF", "def" -> new Token.Keyword(new Keywords.DEF());
+                            case "FN", "fn" -> new Token.Keyword(new Keywords.FN());
+                            case "QUOTE", "quote" -> new Token.Keyword(new Keywords.QUOTE());
+                            case "IF", "if" -> new Token.Keyword(new Keywords.IF());
+                            case "ELSE", "else" -> new Token.Keyword(new Keywords.ELSE());
+                            case "COND", "cond" -> new Token.Keyword(new Keywords.COND());
+                            case "CONS", "cons" -> new Token.Keyword(new Keywords.CONS());
+                            case "CAR", "car" -> new Token.Keyword(new Keywords.CAR());
+                            case "CDR", "cdr" -> new Token.Keyword(new Keywords.CDR());
+                            case "LIST", "list" -> new Token.Keyword(new Keywords.LIST());
+                            default -> new Token.Symbol(s);
+                        };
+                        yield new Option.Some<>(tok);
                     }
                     throw new TokenizeException(String.format("unrecognized char => %c at line: %d, column: %d", c, line, col));
                 }
