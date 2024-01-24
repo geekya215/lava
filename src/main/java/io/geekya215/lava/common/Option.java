@@ -1,4 +1,4 @@
-package io.geekya215.lava.tokenizer;
+package io.geekya215.lava.common;
 
 public sealed interface Option<T> permits Option.Some, Option.None  {
     record Some<T>(T value) implements Option<T> {

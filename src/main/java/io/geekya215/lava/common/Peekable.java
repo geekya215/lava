@@ -1,4 +1,4 @@
-package io.geekya215.lava.tokenizer;
+package io.geekya215.lava.common;
 
 import java.util.Iterator;
 
