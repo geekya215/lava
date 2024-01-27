@@ -42,11 +42,14 @@ public class TokenizerTest {
                 new Token.LeftParen(),
                 new Token.Keyword(new Keywords.LIST()),
                 new Token.SpaceChar(new WhiteSpace.Space()),
-                new Token.Quote("a"),
+                new Token.Quote(),
+                new Token.Symbol("a"),
                 new Token.SpaceChar(new WhiteSpace.Space()),
-                new Token.Quote("b"),
+                new Token.Quote(),
+                new Token.Symbol("b"),
                 new Token.SpaceChar(new WhiteSpace.Space()),
-                new Token.Quote("c"),
+                new Token.Quote(),
+                new Token.Symbol("c"),
                 new Token.RightParen());
         assertEquals(expected, actual);
     }
