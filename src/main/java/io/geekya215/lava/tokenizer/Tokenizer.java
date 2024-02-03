@@ -114,6 +114,7 @@ public final class Tokenizer {
                             // keywords are case-sensitive
                             case "DEF", "def" -> new Token.Keyword(new Keywords.DEF());
                             case "FN", "fn" -> new Token.Keyword(new Keywords.FN());
+                            case "PROG", "prog" -> new Token.Keyword(new Keywords.PROG());
                             case "QUOTE", "quote" -> new Token.Keyword(new Keywords.QUOTE());
                             case "IF", "if" -> new Token.Keyword(new Keywords.IF());
                             case "ELSE", "else" -> new Token.Keyword(new Keywords.ELSE());
