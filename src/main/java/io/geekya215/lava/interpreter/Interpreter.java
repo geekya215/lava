@@ -103,15 +103,11 @@ public final class Interpreter {
     }
 
     private static Expr evalProg(List<Expr> args, Env env) {
-        if (args.isEmpty()) {
-            return BuiltinValue.NIL;
-        } else {
-            Expr res = BuiltinValue.NIL;
-            for (Expr arg : args) {
-                res = eval(arg, env);
-            }
-            return res;
+        Expr res = new Expr.Unit();
+        for (Expr arg : args) {
+            res = eval(arg, env);
         }
+        return res;
     }
 
     private static Expr applyArithmetic(List<Expr> args, BinaryOperator<Integer> func, Env env) {
@@ -141,7 +137,7 @@ public final class Interpreter {
                     throw new EvalException("expected symbol value, got " + param);
                 }
             }).toList();
-            return new Expr.FN(paramsList, args.getLast());
+            return new Expr.FN(paramsList, args.getLast(), env);
         } else {
             throw new EvalException("invalid usage of 'fn'");
         }
@@ -149,9 +145,9 @@ public final class Interpreter {
 
     private static Expr applyFn(String fnName, Expr fn, List<Expr> args, Env env) {
         return switch (fn) {
-            case Expr.FN(List<String> params, Expr body) -> {
+            case Expr.FN(List<String> params, Expr body, Env closure) -> {
                 List<Expr> substitutedArgs = args.stream().map(e -> eval(e, env)).toList();
-                Env newEnv = Env.extend(env);
+                Env newEnv = Env.extend(closure);
                 if (params.size() == substitutedArgs.size()) {
                     for (int i = 0; i < params.size(); i++) {
                         newEnv.set(params.get(i), substitutedArgs.get(i));
@@ -203,14 +199,14 @@ public final class Interpreter {
     }
 
     private static Expr evalList(List<Expr> args, Env env) {
-        return new Expr.Vec(args);
+        return new Expr.Vec(args.stream().map(e -> eval(e, env)).toList());
     }
 
     private static Expr evalDef(List<Expr> args, Env env) {
         if (args.size() == 2 && args.getFirst() instanceof Expr.Atom(Token.Symbol(String s))) {
             Expr value = eval(args.get(1), env);
             env.set(s, value);
-            return value;
+            return new Expr.Unit();
         } else {
             throw new EvalException("invalid usage of 'def'");
         }

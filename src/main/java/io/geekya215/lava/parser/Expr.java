@@ -5,7 +5,7 @@ import io.geekya215.lava.tokenizer.Token;
 
 import java.util.List;
 
-public sealed interface Expr permits Expr.Atom, Expr.FN, Expr.Quote, Expr.Vec {
+public sealed interface Expr permits Expr.Atom, Expr.FN, Expr.Quote, Expr.Unit, Expr.Vec {
     record Vec(List<Expr> exprs) implements Expr {
         @Override
         public String toString() {
@@ -27,6 +27,21 @@ public sealed interface Expr permits Expr.Atom, Expr.FN, Expr.Quote, Expr.Vec {
         }
     }
 
-    record FN(List<String> params, Expr body) implements Expr {
+    record FN(List<String> params, Expr body, Env closure) implements Expr {
+        // Todo
+        // closure to string will stack overflow
+        @Override
+        public String toString() {
+            return "FN{" +
+                    "params=" + params +
+                    ", body=" + body + "}";
+        }
+    }
+
+    record Unit() implements Expr {
+        @Override
+        public String toString() {
+            return "<Unit>";
+        }
     }
 }
