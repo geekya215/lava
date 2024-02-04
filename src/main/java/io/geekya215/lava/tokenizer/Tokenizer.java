@@ -123,6 +123,8 @@ public final class Tokenizer {
                             case "CAR", "car" -> new Token.Keyword(new Keywords.CAR());
                             case "CDR", "cdr" -> new Token.Keyword(new Keywords.CDR());
                             case "LIST", "list" -> new Token.Keyword(new Keywords.LIST());
+                            case "EQ", "eq" -> new Token.Keyword(new Keywords.EQ());
+                            case "EVAL", "eval" -> new Token.Keyword(new Keywords.EVAL());
                             default -> new Token.Symbol(s);
                         };
                         yield new Option.Some<>(tok);

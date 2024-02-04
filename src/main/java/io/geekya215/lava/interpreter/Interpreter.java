@@ -65,6 +65,8 @@ public final class Interpreter {
                         case Keywords.QUOTE _ -> evalQuote(rest, env);
                         case Keywords.FN _ -> evalFn(rest, env);
                         case Keywords.PROG _ -> evalProg(rest, env);
+                        case Keywords.EQ _ -> evalEq(rest, env);
+                        case Keywords.EVAL _ -> evalEval(rest, env);
 
                         default -> throw new EvalException("Unexpected keyword: " + keywords);
                     };
@@ -100,6 +102,24 @@ public final class Interpreter {
             }
             default -> throw new EvalException("Unexpected value: " + expr);
         };
+    }
+
+    private static Expr evalEval(List<Expr> args, Env env) {
+        if (args.size() == 1) {
+            return eval(eval(args.getFirst(), env), env);
+        } else {
+            throw new EvalException("invalid usage of 'eval'");
+        }
+    }
+
+    private static Expr evalEq(List<Expr> args, Env env) {
+        if (args.size() == 2) {
+            Expr left = eval(args.getFirst(), env);
+            Expr right = eval(args.getLast(), env);
+            return left.equals(right) ? BuiltinValue.TRUE : BuiltinValue.FALSE;
+        } else {
+            throw new EvalException("invalid usage of 'eq'");
+        }
     }
 
     private static Expr evalProg(List<Expr> args, Env env) {
@@ -192,7 +212,8 @@ public final class Interpreter {
 
     private static Expr evalQuote(List<Expr> args, Env env) {
         if (args.size() == 1) {
-            return new Expr.Quote(args.getFirst());
+//            return new Expr.Quote(args.getFirst());
+            return args.getFirst();
         } else {
             throw new EvalException("invalid usage of 'quote'");
         }
