@@ -247,8 +247,17 @@ public final class Interpreter {
     }
 
     private static Expr evalCond(List<Expr> args, Env env) {
-        // Todo
-        // support pattern matching
-        return null;
+        for (Expr arg : args) {
+            if (arg instanceof Expr.Vec(List<Expr> branch) && branch.size() == 2) {
+                Expr condition = branch.getFirst();
+                Expr then = branch.getLast();
+                if (eval(condition, env) == BuiltinValue.TRUE || condition instanceof Expr.Atom(Token.Keyword(Keywords.ELSE _))) {
+                    return eval(then, env);
+                }
+            } else {
+                throw new EvalException("invalid usage of 'cond'");
+            }
+        }
+        return new Expr.Unit();
     }
 }
