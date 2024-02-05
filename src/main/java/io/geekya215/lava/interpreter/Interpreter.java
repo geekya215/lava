@@ -11,7 +11,6 @@ import io.geekya215.lava.tokenizer.Token;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.function.BiPredicate;
 import java.util.function.BinaryOperator;
 
@@ -19,12 +18,6 @@ import java.util.function.BinaryOperator;
 public final class Interpreter {
     private static final Env nativeEnv = new Env(Option.none(), new HashMap<>());
     private static final Env runtimeEnv;
-
-    public static final class BuiltinValue {
-        public static final Expr TRUE = new Expr.Atom(new Token.Symbol("#t"));
-        public static final Expr FALSE = new Expr.Atom(new Token.Symbol("#f"));
-        public static final Expr NIL = new Expr.Vec(List.of());
-    }
 
     static {
         runtimeEnv = Env.extend(nativeEnv);
@@ -56,17 +49,17 @@ public final class Interpreter {
                 List<Expr> rest = exprs.subList(1, exprs.size());
                 yield switch (head) {
                     case Expr.Atom(Token.Keyword(Keywords keywords)) -> switch (keywords) {
+                        case Keywords.EQ _ -> evalEq(rest, env);
                         case Keywords.DEF _ -> evalDef(rest, env);
+                        case Keywords.QUOTE _ -> evalQuote(rest, env);
+                        case Keywords.IF _ -> evalIf(rest, env);
+                        case Keywords.COND _ -> evalCond(rest, env);
                         case Keywords.CONS _ -> evalCons(rest, env);
                         case Keywords.CAR _ -> evalCar(rest, env);
                         case Keywords.CDR _ -> evalCdr(rest, env);
                         case Keywords.LIST _ -> evalList(rest, env);
-                        case Keywords.IF _ -> evalIf(rest, env);
-                        case Keywords.COND _ -> evalCond(rest, env);
-                        case Keywords.QUOTE _ -> evalQuote(rest, env);
                         case Keywords.FN _ -> evalFn(rest, env);
                         case Keywords.PROG _ -> evalProg(rest, env);
-                        case Keywords.EQ _ -> evalEq(rest, env);
                         case Keywords.EVAL _ -> evalEval(rest, env);
                         case Keywords.MATCH _ -> evalMatch(rest, env);
 
@@ -106,36 +99,6 @@ public final class Interpreter {
         };
     }
 
-    // Todo
-    // enable structure match
-    private static Expr evalMatch(List<Expr> args, Env env) {
-        if (args.size() == 2 && args.getLast() instanceof Expr.Vec(List<Expr> exprs)) {
-            Expr match = eval(args.getFirst(), env);
-            for (Expr expr : exprs) {
-                if (expr instanceof Expr.Vec(List<Expr> branch) && branch.size() == 2) {
-                    Expr pattern = branch.getFirst();
-                    Expr then = branch.getLast();
-                    if (match.equals(pattern) || pattern instanceof Expr.Atom(Token.Keyword(Keywords.DEFAULT _))) {
-                        return eval(then, env);
-                    }
-                } else {
-                    throw new EvalException("invalid usage of 'match'");
-                }
-            }
-        } else {
-            throw new EvalException("invalid usage of 'match'");
-        }
-        return new Expr.Unit();
-    }
-
-    private static Expr evalEval(List<Expr> args, Env env) {
-        if (args.size() == 1) {
-            return eval(eval(args.getFirst(), env), env);
-        } else {
-            throw new EvalException("invalid usage of 'eval'");
-        }
-    }
-
     private static Expr evalEq(List<Expr> args, Env env) {
         if (args.size() == 2) {
             Expr left = eval(args.getFirst(), env);
@@ -146,30 +109,79 @@ public final class Interpreter {
         }
     }
 
-    private static Expr evalProg(List<Expr> args, Env env) {
-        Expr res = new Expr.Unit();
-        for (Expr arg : args) {
-            res = eval(arg, env);
-        }
-        return res;
-    }
-
-    private static Expr applyArithmetic(List<Expr> args, BinaryOperator<Integer> func, Env env) {
-        Integer result = args.stream().map(e -> eval(e, env)).map(e -> switch (e) {
-            case Expr.Atom(Token.Number(String n)) -> Integer.parseInt(n);
-            default -> throw new EvalException("expected number value, got " + e);
-        }).reduce(func).orElse(0);
-        return new Expr.Atom(new Token.Number(result.toString()));
-    }
-
-    private static Expr applyComparator(List<Expr> args, BiPredicate<Integer, Integer> predicate, Env env) {
-        if (args.size() == 2
-                && eval(args.getFirst(), env) instanceof Expr.Atom(Token.Number(String left))
-                && eval(args.getLast(), env) instanceof Expr.Atom(Token.Number(String right))) {
-            return predicate.test(Integer.parseInt(left), Integer.parseInt(right)) ? BuiltinValue.TRUE : BuiltinValue.FALSE;
+    private static Expr evalDef(List<Expr> args, Env env) {
+        if (args.size() == 2 && args.getFirst() instanceof Expr.Atom(Token.Symbol(String s))) {
+            Expr value = eval(args.get(1), env);
+            env.set(s, value);
+            return new Expr.Unit();
         } else {
-            throw new EvalException("expected 2 args of number type");
+            throw new EvalException("invalid usage of 'def'");
         }
+    }
+
+    private static Expr evalQuote(List<Expr> args, Env env) {
+        if (args.size() == 1) {
+            return args.getFirst();
+        } else {
+            throw new EvalException("invalid usage of 'quote'");
+        }
+    }
+
+    private static Expr evalIf(List<Expr> args, Env env) {
+        if (args.size() == 3) {
+            Expr test = args.get(0);
+            Expr conseq = args.get(1);
+            Expr alt = args.get(2);
+            Expr expr = eval(test, env) == BuiltinValue.TRUE ? conseq : alt;
+            return eval(expr, env);
+
+        } else {
+            throw new EvalException("invalid usage of 'if'");
+        }
+    }
+
+    private static Expr evalCond(List<Expr> args, Env env) {
+        for (Expr arg : args) {
+            if (arg instanceof Expr.Vec(List<Expr> branch) && branch.size() == 2) {
+                Expr condition = branch.getFirst();
+                Expr then = branch.getLast();
+                if (eval(condition, env) == BuiltinValue.TRUE || condition instanceof Expr.Atom(
+                        Token.Keyword(Keywords.ELSE _)
+                )) {
+                    return eval(then, env);
+                }
+            } else {
+                throw new EvalException("invalid usage of 'cond'");
+            }
+        }
+        return new Expr.Unit();
+    }
+
+    private static Expr evalCons(List<Expr> args, Env env) {
+        if (args.size() == 2 && eval(args.getLast(), env) instanceof Expr.Vec(List<Expr> exprs)) {
+            var res = new ArrayList<>(exprs);
+            res.addFirst(eval(args.getFirst(), env));
+            return new Expr.Vec(res);
+        }
+        throw new EvalException("invalid use of 'cons'");
+    }
+
+    private static Expr evalCar(List<Expr> args, Env env) {
+        if (args.size() == 1 && eval(args.getFirst(), env) instanceof Expr.Vec(List<Expr> exprs)) {
+            return exprs.isEmpty() ? BuiltinValue.NIL : exprs.getFirst();
+        }
+        throw new EvalException("cannot use 'car' on non-list value");
+    }
+
+    private static Expr evalCdr(List<Expr> args, Env env) {
+        if (args.size() == 1 && eval(args.getFirst(), env) instanceof Expr.Vec(List<Expr> exprs)) {
+            return exprs.isEmpty() ? BuiltinValue.NIL : new Expr.Vec(exprs.subList(1, exprs.size()));
+        }
+        throw new EvalException("cannot use 'cdr' on non-list value");
+    }
+
+    private static Expr evalList(List<Expr> args, Env env) {
+        return new Expr.Vec(args.stream().map(e -> eval(e, env)).toList());
     }
 
     private static Expr evalFn(List<Expr> args, Env env) {
@@ -211,77 +223,65 @@ public final class Interpreter {
         };
     }
 
-    private static Expr evalCons(List<Expr> args, Env env) {
-        if (args.size() == 2 && eval(args.getLast(), env) instanceof Expr.Vec(List<Expr> exprs)) {
-            var res = new ArrayList<>(exprs);
-            res.addFirst(eval(args.getFirst(), env));
-            return new Expr.Vec(res);
-        }
-        throw new EvalException("invalid use of 'cons'");
-    }
-
-    private static Expr evalCar(List<Expr> args, Env env) {
-        if (args.size() == 1 && eval(args.getFirst(), env) instanceof Expr.Vec(List<Expr> exprs)) {
-            return exprs.isEmpty() ? BuiltinValue.NIL : exprs.getFirst();
-        }
-        throw new EvalException("cannot use 'car' on non-list value");
-    }
-
-    private static Expr evalCdr(List<Expr> args, Env env) {
-        if (args.size() == 1 && eval(args.getFirst(), env) instanceof Expr.Vec(List<Expr> exprs)) {
-            return exprs.isEmpty() ? BuiltinValue.NIL : new Expr.Vec(exprs.subList(1, exprs.size()));
-        }
-        throw new EvalException("cannot use 'cdr' on non-list value");
-    }
-
-    private static Expr evalQuote(List<Expr> args, Env env) {
-        if (args.size() == 1) {
-//            return new Expr.Quote(args.getFirst());
-            return args.getFirst();
-        } else {
-            throw new EvalException("invalid usage of 'quote'");
-        }
-    }
-
-    private static Expr evalList(List<Expr> args, Env env) {
-        return new Expr.Vec(args.stream().map(e -> eval(e, env)).toList());
-    }
-
-    private static Expr evalDef(List<Expr> args, Env env) {
-        if (args.size() == 2 && args.getFirst() instanceof Expr.Atom(Token.Symbol(String s))) {
-            Expr value = eval(args.get(1), env);
-            env.set(s, value);
-            return new Expr.Unit();
-        } else {
-            throw new EvalException("invalid usage of 'def'");
-        }
-    }
-
-    private static Expr evalIf(List<Expr> args, Env env) {
-        if (args.size() == 3) {
-            Expr test = args.get(0);
-            Expr conseq = args.get(1);
-            Expr alt = args.get(2);
-            Expr expr = eval(test, env) == BuiltinValue.TRUE ? conseq : alt;
-            return eval(expr, env);
-
-        } else {
-            throw new EvalException("invalid usage of 'if'");
-        }
-    }
-
-    private static Expr evalCond(List<Expr> args, Env env) {
+    private static Expr evalProg(List<Expr> args, Env env) {
+        Expr res = new Expr.Unit();
         for (Expr arg : args) {
-            if (arg instanceof Expr.Vec(List<Expr> branch) && branch.size() == 2) {
-                Expr condition = branch.getFirst();
-                Expr then = branch.getLast();
-                if (eval(condition, env) == BuiltinValue.TRUE || condition instanceof Expr.Atom(Token.Keyword(Keywords.ELSE _))) {
-                    return eval(then, env);
+            res = eval(arg, env);
+        }
+        return res;
+    }
+
+    private static Expr evalEval(List<Expr> args, Env env) {
+        if (args.size() == 1) {
+            return eval(eval(args.getFirst(), env), env);
+        } else {
+            throw new EvalException("invalid usage of 'eval'");
+        }
+    }
+
+    // Todo
+    // enable structure match
+    private static Expr evalMatch(List<Expr> args, Env env) {
+        if (args.size() == 2 && args.getLast() instanceof Expr.Vec(List<Expr> exprs)) {
+            Expr match = eval(args.getFirst(), env);
+            for (Expr expr : exprs) {
+                if (expr instanceof Expr.Vec(List<Expr> branch) && branch.size() == 2) {
+                    Expr pattern = branch.getFirst();
+                    Expr then = branch.getLast();
+                    if (match.equals(pattern) || pattern instanceof Expr.Atom(Token.Keyword(Keywords.DEFAULT _))) {
+                        return eval(then, env);
+                    }
+                } else {
+                    throw new EvalException("invalid usage of 'match'");
                 }
-            } else {
-                throw new EvalException("invalid usage of 'cond'");
             }
+        } else {
+            throw new EvalException("invalid usage of 'match'");
         }
         return new Expr.Unit();
+    }
+
+    private static Expr applyArithmetic(List<Expr> args, BinaryOperator<Integer> func, Env env) {
+        Integer result = args.stream().map(e -> eval(e, env)).map(e -> switch (e) {
+            case Expr.Atom(Token.Number(String n)) -> Integer.parseInt(n);
+            default -> throw new EvalException("expected number value, got " + e);
+        }).reduce(func).orElse(0);
+        return new Expr.Atom(new Token.Number(result.toString()));
+    }
+
+    private static Expr applyComparator(List<Expr> args, BiPredicate<Integer, Integer> predicate, Env env) {
+        if (args.size() == 2
+                && eval(args.getFirst(), env) instanceof Expr.Atom(Token.Number(String left))
+                && eval(args.getLast(), env) instanceof Expr.Atom(Token.Number(String right))) {
+            return predicate.test(Integer.parseInt(left), Integer.parseInt(right)) ? BuiltinValue.TRUE : BuiltinValue.FALSE;
+        } else {
+            throw new EvalException("expected 2 args of number type");
+        }
+    }
+
+    public static final class BuiltinValue {
+        public static final Expr TRUE = new Expr.Atom(new Token.Symbol("#t"));
+        public static final Expr FALSE = new Expr.Atom(new Token.Symbol("#f"));
+        public static final Expr NIL = new Expr.Vec(List.of());
     }
 }

@@ -16,7 +16,7 @@ public record Env(Option<Env> parent, Map<String, Expr> variables) {
         if (expr == null) {
             return Option.bind(parent, p -> p.get(key));
         } else {
-           return Option.some(expr);
+            return Option.some(expr);
         }
     }
 
