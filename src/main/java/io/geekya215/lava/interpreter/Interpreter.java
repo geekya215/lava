@@ -11,6 +11,7 @@ import io.geekya215.lava.tokenizer.Token;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.function.BiPredicate;
 import java.util.function.BinaryOperator;
 
@@ -67,6 +68,7 @@ public final class Interpreter {
                         case Keywords.PROG _ -> evalProg(rest, env);
                         case Keywords.EQ _ -> evalEq(rest, env);
                         case Keywords.EVAL _ -> evalEval(rest, env);
+                        case Keywords.MATCH _ -> evalMatch(rest, env);
 
                         default -> throw new EvalException("Unexpected keyword: " + keywords);
                     };
@@ -102,6 +104,28 @@ public final class Interpreter {
             }
             default -> throw new EvalException("Unexpected value: " + expr);
         };
+    }
+
+    // Todo
+    // enable structure match
+    private static Expr evalMatch(List<Expr> args, Env env) {
+        if (args.size() == 2 && args.getLast() instanceof Expr.Vec(List<Expr> exprs)) {
+            Expr match = eval(args.getFirst(), env);
+            for (Expr expr : exprs) {
+                if (expr instanceof Expr.Vec(List<Expr> branch) && branch.size() == 2) {
+                    Expr pattern = branch.getFirst();
+                    Expr then = branch.getLast();
+                    if (match.equals(pattern) || pattern instanceof Expr.Atom(Token.Keyword(Keywords.DEFAULT _))) {
+                        return eval(then, env);
+                    }
+                } else {
+                    throw new EvalException("invalid usage of 'match'");
+                }
+            }
+        } else {
+            throw new EvalException("invalid usage of 'match'");
+        }
+        return new Expr.Unit();
     }
 
     private static Expr evalEval(List<Expr> args, Env env) {

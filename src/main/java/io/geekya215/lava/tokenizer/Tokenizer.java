@@ -101,6 +101,8 @@ public final class Tokenizer {
 
                 }
 
+                case '_' -> consume(chars, new Token.Underscore());
+
                 default -> {
                     if (Character.isDigit(c)) {
                         String s = peekTakeWhite(chars, Character::isDigit);
@@ -125,6 +127,8 @@ public final class Tokenizer {
                             case "LIST", "list" -> new Token.Keyword(new Keywords.LIST());
                             case "EQ", "eq" -> new Token.Keyword(new Keywords.EQ());
                             case "EVAL", "eval" -> new Token.Keyword(new Keywords.EVAL());
+                            case "MATCH", "match" -> new Token.Keyword(new Keywords.MATCH());
+                            case "DEFAULT", "default" -> new Token.Keyword(new Keywords.DEFAULT());
                             default -> new Token.Symbol(s);
                         };
                         yield new Option.Some<>(tok);
