@@ -5,7 +5,7 @@ import io.geekya215.lava.tokenizer.Token;
 
 import java.util.List;
 
-public sealed interface Expr permits Expr.Atom, Expr.FN, Expr.Quote, Expr.Unit, Expr.Vec {
+public sealed interface Expr permits Expr.Atom, Expr.FN, Expr.QuasiQuote, Expr.Quote, Expr.Unit, Expr.Unquote, Expr.Vec {
     record Vec(List<Expr> exprs) implements Expr {
         @Override
         public String toString() {
@@ -17,6 +17,20 @@ public sealed interface Expr permits Expr.Atom, Expr.FN, Expr.Quote, Expr.Unit, 
         @Override
         public String toString() {
             return "Quote{" + expr + "}";
+        }
+    }
+
+    record QuasiQuote(Expr expr) implements Expr {
+        @Override
+        public String toString() {
+            return "QuasiQuote{" + expr + "}";
+        }
+    }
+
+    record Unquote(Expr expr) implements Expr {
+        @Override
+        public String toString() {
+            return "Unquote{" + expr + "}";
         }
     }
 

@@ -30,6 +30,7 @@ public final class Interpreter {
     public static Expr eval(Expr expr, Env env) {
         return switch (expr) {
             case Expr.Quote(Expr quote) -> quote;
+            case Expr.QuasiQuote(Expr quasiQuote) -> new Expr.Quote(evalQuasiQuote(quasiQuote, env));
             case Expr.Atom(Token tok) -> {
                 if (tok instanceof Token.Symbol(String symbolName)) {
                     yield env.get(symbolName)
@@ -62,6 +63,7 @@ public final class Interpreter {
                         case Keywords.PROG _ -> evalProg(rest, env);
                         case Keywords.EVAL _ -> evalEval(rest, env);
                         case Keywords.MATCH _ -> evalMatch(rest, env);
+                        case Keywords.MACRO _ -> evalMacro(rest, env);
 
                         default -> throw new EvalException("Unexpected keyword: " + keywords);
                     };
@@ -99,6 +101,14 @@ public final class Interpreter {
         };
     }
 
+    private static Expr evalQuasiQuote(Expr quasiQuote, Env env) {
+        return switch (quasiQuote) {
+            case Expr.Unquote(Expr unquote) -> eval(unquote, env);
+            case Expr.Vec(List<Expr> exprs) -> new Expr.Vec(exprs.stream().map(e -> evalQuasiQuote(e, env)).toList());
+            default -> quasiQuote;
+        };
+    }
+
     private static Expr evalEq(List<Expr> args, Env env) {
         if (args.size() == 2) {
             Expr left = eval(args.getFirst(), env);
@@ -121,7 +131,7 @@ public final class Interpreter {
 
     private static Expr evalQuote(List<Expr> args, Env env) {
         if (args.size() == 1) {
-            return args.getFirst();
+            return new Expr.Quote(args.getFirst());
         } else {
             throw new EvalException("invalid usage of 'quote'");
         }
@@ -259,6 +269,13 @@ public final class Interpreter {
             throw new EvalException("invalid usage of 'match'");
         }
         return new Expr.Unit();
+    }
+
+    private static Expr evalMacro(List<Expr> args, Env env) {
+        // Todo
+        // basic
+        // enable &whole &rest
+        return null;
     }
 
     private static Expr applyArithmetic(List<Expr> args, BinaryOperator<Integer> func, Env env) {

@@ -65,6 +65,8 @@ public final class Tokenizer {
                 case '\n' -> consume(chars, new Token.SpaceChar(new WhiteSpace.NewLine()));
 
                 case '\'' -> consume(chars, new Token.Quote());
+                case '`' -> consume(chars, new Token.QuasiQuote());
+                case ',' -> consume(chars, new Token.Unquote());
 
                 case '(' -> consume(chars, new Token.LeftParen());
                 case ')' -> consume(chars, new Token.RightParen());
@@ -131,6 +133,7 @@ public final class Tokenizer {
                             case "EVAL", "eval" -> new Token.Keyword(new Keywords.EVAL());
                             case "MATCH", "match" -> new Token.Keyword(new Keywords.MATCH());
                             case "DEFAULT", "default" -> new Token.Keyword(new Keywords.DEFAULT());
+                            case "MACRO", "macro" -> new Token.Keyword(new Keywords.MACRO());
                             default -> new Token.Symbol(s);
                         };
                         yield new Option.Some<>(tok);

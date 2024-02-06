@@ -1,8 +1,8 @@
 package io.geekya215.lava.tokenizer;
 
 public sealed interface Token
-        permits Token.EOF, Token.Keyword, Token.LeftParen, Token.Number, Token.Operator, Token.Quote, Token.RightParen,
-        Token.SpaceChar, Token.Symbol, Token.Underscore {
+        permits Token.EOF, Token.Keyword, Token.LeftParen, Token.Number, Token.Operator, Token.QuasiQuote, Token.Quote,
+        Token.RightParen, Token.SpaceChar, Token.Symbol, Token.Underscore, Token.Unquote {
     record LeftParen() implements Token {
         @Override
         public String toString() {
@@ -21,6 +21,20 @@ public sealed interface Token
         @Override
         public String toString() {
             return "'";
+        }
+    }
+
+    record QuasiQuote() implements Token {
+        @Override
+        public String toString() {
+            return "QuasiQuote";
+        }
+    }
+
+    record Unquote() implements Token {
+        @Override
+        public String toString() {
+            return "Unquote";
         }
     }
 
