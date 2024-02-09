@@ -46,6 +46,7 @@ public final class Tokenizer {
                         default -> col += 1;
                     }
                 }
+                case Token.Keyword(Keywords keywords) -> col += keywords.toString().length();
                 default -> col += 1;
             }
         }
