@@ -1,12 +1,10 @@
 package io.geekya215.lava.repl;
 
-import io.geekya215.lava.Expr;
-import io.geekya215.lava.Lexer;
-import io.geekya215.lava.Parser;
-import io.geekya215.lava.Ref;
 import io.geekya215.lava.exception.EvalException;
 import io.geekya215.lava.exception.ParserException;
 import io.geekya215.lava.interpreter.Interpreter;
+import io.geekya215.lava.parser.Expr;
+import io.geekya215.lava.parser.Parser;
 import org.jline.reader.UserInterruptException;
 
 public abstract class Repl {
@@ -32,14 +30,7 @@ public abstract class Repl {
     public void loop() {
         while (true) {
             try {
-                var x = readLine(context.getPrompt() + "> ");
-
-                // skip empty input
-                var line = Lexer.preprocess(x);
-                if (line.isBlank()) {
-                    continue;
-                }
-
+                String line = readLine(context.getPrompt() + "> ");
                 println(context.getIndicator() + " " + eval(line));
             } catch (UserInterruptException e) {
                 println("\nuser interrupt");
@@ -57,8 +48,7 @@ public abstract class Repl {
     }
 
     private Expr eval(String line) {
-        var lex = Lexer.tokenize(line);
-        var expr = Parser.parse(Ref.wrap(lex));
-        return Interpreter.eval(expr);
+        Expr SExpr = Parser.parse(line);
+        return Interpreter.eval(SExpr);
     }
 }
