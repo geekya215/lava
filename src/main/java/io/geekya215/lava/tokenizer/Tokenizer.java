@@ -132,6 +132,7 @@ public final class Tokenizer {
                             case "FN", "fn" -> new Token.Keyword(new Keywords.FN());
                             case "PROG", "prog" -> new Token.Keyword(new Keywords.PROG());
                             case "EVAL", "eval" -> new Token.Keyword(new Keywords.EVAL());
+                            case "LET", "let" -> new Token.Keyword(new Keywords.LET());
                             case "MATCH", "match" -> new Token.Keyword(new Keywords.MATCH());
                             case "DEFAULT", "default" -> new Token.Keyword(new Keywords.DEFAULT());
                             case "MACRO", "macro" -> new Token.Keyword(new Keywords.MACRO());

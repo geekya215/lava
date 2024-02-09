@@ -62,6 +62,7 @@ public final class Interpreter {
                         case Keywords.FN _ -> evalFn(rest, env);
                         case Keywords.PROG _ -> evalProg(rest, env);
                         case Keywords.EVAL _ -> evalEval(rest, env);
+                        case Keywords.LET _ -> evalLet(rest, env);
                         case Keywords.MATCH _ -> evalMatch(rest, env);
                         case Keywords.MACRO _ -> evalMacro(rest, env);
                         case Keywords.EXPAND _ -> evalExpand(rest, env);
@@ -250,6 +251,24 @@ public final class Interpreter {
             return eval(eval(args.getFirst(), env), env);
         } else {
             throw new EvalException("invalid usage of 'eval'");
+        }
+    }
+
+    private static Expr evalLet(List<Expr> args, Env env) {
+        if (args.size() == 2 && args.getFirst() instanceof Expr.Vec(List<Expr> list)) {
+            Env newEnv = Env.extend(env);
+            list.forEach(e -> {
+                if (e instanceof Expr.Vec(List<Expr> bind)
+                        && bind.size() == 2
+                        && bind.getFirst() instanceof Expr.Atom(Token.Symbol(String name))) {
+                    newEnv.set(name, eval(bind.getLast(), env));
+                } else {
+                    throw new EvalException("invalid var bind of 'let'");
+                }
+            });
+            return eval(args.getLast(), newEnv);
+        } else {
+            throw new EvalException("invalid usage of 'let'");
         }
     }
 

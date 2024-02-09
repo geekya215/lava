@@ -2,8 +2,8 @@ package io.geekya215.lava.tokenizer;
 
 public sealed interface Keywords
         permits Keywords.CAR, Keywords.CDR, Keywords.COND, Keywords.CONS, Keywords.DEF, Keywords.DEFAULT, Keywords.ELSE,
-        Keywords.EQ, Keywords.EVAL, Keywords.EXPAND, Keywords.FN, Keywords.IF, Keywords.LIST, Keywords.MACRO,
-        Keywords.MATCH, Keywords.PROG, Keywords.QUOTE {
+        Keywords.EQ, Keywords.EVAL, Keywords.EXPAND, Keywords.FN, Keywords.IF, Keywords.LET, Keywords.LIST,
+        Keywords.MACRO, Keywords.MATCH, Keywords.PROG, Keywords.QUOTE {
     record DEF() implements Keywords {
         @Override
         public String toString() {
@@ -92,6 +92,13 @@ public sealed interface Keywords
         @Override
         public String toString() {
             return "EVAL";
+        }
+    }
+
+    record LET() implements Keywords {
+        @Override
+        public String toString() {
+            return "LET";
         }
     }
 
