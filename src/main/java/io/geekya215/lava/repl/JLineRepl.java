@@ -15,13 +15,13 @@ public class JLineRepl extends Repl {
     public JLineRepl(Context context) throws IOException {
         super(context);
         terminal = TerminalBuilder.builder()
-            .jansi(true)
-            .jna(false)
-            .build();
+                .jansi(true)
+                .jna(false)
+                .build();
         lineReader = LineReaderBuilder.builder()
-            .terminal(terminal)
-            .history(new DefaultHistory())
-            .build();
+                .terminal(terminal)
+                .history(new DefaultHistory())
+                .build();
     }
 
     @Override

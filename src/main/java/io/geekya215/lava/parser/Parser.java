@@ -22,6 +22,8 @@ public final class Parser {
             case Token.LeftParen _ -> parseList(tokens);
             case Token.RightParen _ -> throw new ParserException("'Unexpected )");
             case Token.Quote _ -> new Expr.Quote(parseExpr(tokens));
+            case Token.QuasiQuote _ -> new Expr.QuasiQuote(parseExpr(tokens));
+            case Token.Unquote _ -> new Expr.Unquote(parseExpr(tokens));
             default -> new Expr.Atom(head);
         };
     }

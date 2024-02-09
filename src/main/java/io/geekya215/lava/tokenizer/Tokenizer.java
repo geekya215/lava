@@ -46,6 +46,7 @@ public final class Tokenizer {
                         default -> col += 1;
                     }
                 }
+                case Token.Keyword(Keywords keywords) -> col += keywords.toString().length();
                 default -> col += 1;
             }
         }
@@ -65,6 +66,8 @@ public final class Tokenizer {
                 case '\n' -> consume(chars, new Token.SpaceChar(new WhiteSpace.NewLine()));
 
                 case '\'' -> consume(chars, new Token.Quote());
+                case '`' -> consume(chars, new Token.QuasiQuote());
+                case ',' -> consume(chars, new Token.Unquote());
 
                 case '(' -> consume(chars, new Token.LeftParen());
                 case ')' -> consume(chars, new Token.RightParen());
@@ -101,10 +104,14 @@ public final class Tokenizer {
 
                 }
 
+                case '_' -> consume(chars, new Token.Underscore());
+
                 default -> {
                     if (Character.isDigit(c)) {
                         String s = peekTakeWhite(chars, Character::isDigit);
-                        if (chars.peek() instanceof Option.Some<Character>(Character junk) && Character.isAlphabetic(junk)) {
+                        if (chars.peek() instanceof Option.Some<Character>(
+                                Character junk
+                        ) && Character.isAlphabetic(junk)) {
                             throw new TokenizeException(String.format("invalid number format at line: %d, column: %d", line, col));
                         }
                         yield new Option.Some<>(new Token.Number(s));
@@ -112,16 +119,24 @@ public final class Tokenizer {
                         String s = peekTakeWhite(chars, ch -> Character.isAlphabetic(ch) || Character.isDigit(ch));
                         Token tok = switch (s) {
                             // keywords are case-sensitive
+                            case "EQ", "eq" -> new Token.Keyword(new Keywords.EQ());
                             case "DEF", "def" -> new Token.Keyword(new Keywords.DEF());
-                            case "FN", "fn" -> new Token.Keyword(new Keywords.FN());
                             case "QUOTE", "quote" -> new Token.Keyword(new Keywords.QUOTE());
                             case "IF", "if" -> new Token.Keyword(new Keywords.IF());
-                            case "ELSE", "else" -> new Token.Keyword(new Keywords.ELSE());
                             case "COND", "cond" -> new Token.Keyword(new Keywords.COND());
+                            case "ELSE", "else" -> new Token.Keyword(new Keywords.ELSE());
                             case "CONS", "cons" -> new Token.Keyword(new Keywords.CONS());
                             case "CAR", "car" -> new Token.Keyword(new Keywords.CAR());
                             case "CDR", "cdr" -> new Token.Keyword(new Keywords.CDR());
                             case "LIST", "list" -> new Token.Keyword(new Keywords.LIST());
+                            case "FN", "fn" -> new Token.Keyword(new Keywords.FN());
+                            case "PROG", "prog" -> new Token.Keyword(new Keywords.PROG());
+                            case "EVAL", "eval" -> new Token.Keyword(new Keywords.EVAL());
+                            case "LET", "let" -> new Token.Keyword(new Keywords.LET());
+                            case "MATCH", "match" -> new Token.Keyword(new Keywords.MATCH());
+                            case "DEFAULT", "default" -> new Token.Keyword(new Keywords.DEFAULT());
+                            case "MACRO", "macro" -> new Token.Keyword(new Keywords.MACRO());
+                            case "EXPAND", "expand" -> new Token.Keyword(new Keywords.EXPAND());
                             default -> new Token.Symbol(s);
                         };
                         yield new Option.Some<>(tok);

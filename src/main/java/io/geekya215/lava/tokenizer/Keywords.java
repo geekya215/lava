@@ -1,8 +1,9 @@
 package io.geekya215.lava.tokenizer;
 
 public sealed interface Keywords
-        permits Keywords.CAR, Keywords.CDR, Keywords.COND, Keywords.CONS, Keywords.DEF,
-        Keywords.ELSE, Keywords.FN, Keywords.IF, Keywords.LIST, Keywords.QUOTE {
+        permits Keywords.CAR, Keywords.CDR, Keywords.COND, Keywords.CONS, Keywords.DEF, Keywords.DEFAULT, Keywords.ELSE,
+        Keywords.EQ, Keywords.EVAL, Keywords.EXPAND, Keywords.FN, Keywords.IF, Keywords.LET, Keywords.LIST,
+        Keywords.MACRO, Keywords.MATCH, Keywords.PROG, Keywords.QUOTE {
     record DEF() implements Keywords {
         @Override
         public String toString() {
@@ -70,6 +71,62 @@ public sealed interface Keywords
         @Override
         public String toString() {
             return "LIST";
+        }
+    }
+
+    record PROG() implements Keywords {
+        @Override
+        public String toString() {
+            return "PROG";
+        }
+    }
+
+    record EQ() implements Keywords {
+        @Override
+        public String toString() {
+            return "EQ";
+        }
+    }
+
+    record EVAL() implements Keywords {
+        @Override
+        public String toString() {
+            return "EVAL";
+        }
+    }
+
+    record LET() implements Keywords {
+        @Override
+        public String toString() {
+            return "LET";
+        }
+    }
+
+    record MATCH() implements Keywords {
+        @Override
+        public String toString() {
+            return "MATCH";
+        }
+    }
+
+    record DEFAULT() implements Keywords {
+        @Override
+        public String toString() {
+            return "DEFAULT";
+        }
+    }
+
+    record MACRO() implements Keywords {
+        @Override
+        public String toString() {
+            return "MACRO";
+        }
+    }
+
+    record EXPAND() implements Keywords {
+        @Override
+        public String toString() {
+            return "EXPAND";
         }
     }
 }

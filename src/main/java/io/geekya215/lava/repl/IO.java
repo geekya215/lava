@@ -6,9 +6,9 @@ import java.io.Writer;
 import java.util.Scanner;
 
 public record IO(
-    Scanner scanner,
-    PrintWriter out,
-    PrintWriter err
+        Scanner scanner,
+        PrintWriter out,
+        PrintWriter err
 ) {
     public static final IO STDIO = new IO(new InputStreamReader(System.in), new PrintWriter(System.out), new PrintWriter(System.err));
 

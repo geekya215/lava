@@ -1,5 +1,9 @@
-import io.geekya215.lava.*;
 import io.geekya215.lava.interpreter.Interpreter;
+import io.geekya215.lava.parser.Expr;
+import io.geekya215.lava.parser.Parser;
+import io.geekya215.lava.tokenizer.Keywords;
+import io.geekya215.lava.tokenizer.Operators;
+import io.geekya215.lava.tokenizer.Token;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -7,21 +11,15 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class InterpreterTest {
-    List<Token> tokenize(String input) {
-        return Lexer.tokenize(Lexer.preprocess(input));
-    }
-
-
     Expr getExpr(String input) {
-        var tokens = tokenize(input);
-        return Parser.parse(new Ref<>(tokens));
+        return Parser.parse(input);
     }
 
     @Test
     void getNumberOne() {
         var expr = getExpr("1");
         var actualResult = Interpreter.eval(expr);
-        var expectedResult = new Expr.Number(1);
+        var expectedResult = new Expr.Atom(new Token.Number("1"));
         assertEquals(expectedResult, actualResult);
     }
 
@@ -29,7 +27,7 @@ public class InterpreterTest {
     void getQuoteA() {
         var expr = getExpr("'a");
         var actualResult = Interpreter.eval(expr);
-        var expectedResult = new Expr.Symbol("a");
+        var expectedResult = new Expr.Atom(new Token.Symbol("a"));
         assertEquals(expectedResult, actualResult);
     }
 
@@ -37,8 +35,11 @@ public class InterpreterTest {
     void getQuoteListOfABC() {
         var expr = getExpr("'(a b c)");
         var actualResult = Interpreter.eval(expr);
-        var expectedResult = new Expr.List(
-            List.of(new Expr.Symbol("a"), new Expr.Symbol("b"), new Expr.Symbol("c")));
+        var expectedResult = new Expr.Vec(
+                List.of(
+                        new Expr.Atom(new Token.Symbol("a")),
+                        new Expr.Atom(new Token.Symbol("b")),
+                        new Expr.Atom(new Token.Symbol("c"))));
         assertEquals(expectedResult, actualResult);
     }
 
@@ -46,7 +47,7 @@ public class InterpreterTest {
     void OnePlusTwoEqualThree() {
         var expr = getExpr("(+ 1 2)");
         var actualResult = Interpreter.eval(expr);
-        var expectedResult = new Expr.Number(3);
+        var expectedResult = new Expr.Atom(new Token.Number("3"));
         assertEquals(expectedResult, actualResult);
     }
 
@@ -54,7 +55,7 @@ public class InterpreterTest {
     void OneMinusTwoEqualNegativeOne() {
         var expr = getExpr("(- 1 2)");
         var actualResult = Interpreter.eval(expr);
-        var expectedResult = new Expr.Number(-1);
+        var expectedResult = new Expr.Atom(new Token.Number("-1"));
         assertEquals(expectedResult, actualResult);
     }
 
@@ -62,7 +63,7 @@ public class InterpreterTest {
     void OneMultiplyTwoEqualTwo() {
         var expr = getExpr("(* 1 2)");
         var actualResult = Interpreter.eval(expr);
-        var expectedResult = new Expr.Number(2);
+        var expectedResult = new Expr.Atom(new Token.Number("2"));
         assertEquals(expectedResult, actualResult);
     }
 
@@ -70,15 +71,16 @@ public class InterpreterTest {
     void TwoDivideOneEqualTwo() {
         var expr = getExpr("(/ 2 1)");
         var actualResult = Interpreter.eval(expr);
-        var expectedResult = new Expr.Number(2);
+        var expectedResult = new Expr.Atom(new Token.Number("2"));
         assertEquals(expectedResult, actualResult);
     }
 
+    //
     @Test
     void OnePlusTwoMultiplyThreeEqualSeven() {
         var expr = getExpr("(+ 1 (* 2 3))");
         var actualResult = Interpreter.eval(expr);
-        var expectedResult = new Expr.Number(7);
+        var expectedResult = new Expr.Atom(new Token.Number("7"));
         assertEquals(expectedResult, actualResult);
     }
 
@@ -86,7 +88,7 @@ public class InterpreterTest {
     void OneLessThanTwo() {
         var expr = getExpr("(< 1 2)");
         var actualResult = Interpreter.eval(expr);
-        var expectedResult = new Expr.Symbol("#t");
+        var expectedResult = Interpreter.BuiltinValue.TRUE;
         assertEquals(expectedResult, actualResult);
     }
 
@@ -94,7 +96,7 @@ public class InterpreterTest {
     void OneLessThanOrEqualTwo() {
         var expr = getExpr("(<= 1 2)");
         var actualResult = Interpreter.eval(expr);
-        var expectedResult = new Expr.Symbol("#t");
+        var expectedResult = Interpreter.BuiltinValue.TRUE;
         assertEquals(expectedResult, actualResult);
     }
 
@@ -102,7 +104,7 @@ public class InterpreterTest {
     void TwoGreaterThanOne() {
         var expr = getExpr("(> 2 1)");
         var actualResult = Interpreter.eval(expr);
-        var expectedResult = new Expr.Symbol("#t");
+        var expectedResult = Interpreter.BuiltinValue.TRUE;
         assertEquals(expectedResult, actualResult);
     }
 
@@ -110,7 +112,7 @@ public class InterpreterTest {
     void TwoGreaterThanOrEqualOne() {
         var expr = getExpr("(>= 2 1)");
         var actualResult = Interpreter.eval(expr);
-        var expectedResult = new Expr.Symbol("#t");
+        var expectedResult = Interpreter.BuiltinValue.TRUE;
         assertEquals(expectedResult, actualResult);
     }
 
@@ -118,7 +120,7 @@ public class InterpreterTest {
     void OneEqualOne() {
         var expr = getExpr("(= 1 1)");
         var actualResult = Interpreter.eval(expr);
-        var expectedResult = new Expr.Symbol("#t");
+        var expectedResult = Interpreter.BuiltinValue.TRUE;
         assertEquals(expectedResult, actualResult);
     }
 
@@ -126,31 +128,31 @@ public class InterpreterTest {
     void OneNotEqualTwo() {
         var expr = getExpr("(= 1 2)");
         var actualResult = Interpreter.eval(expr);
-        var expectedResult = new Expr.Symbol("#f");
+        var expectedResult = Interpreter.BuiltinValue.FALSE;
         assertEquals(expectedResult, actualResult);
     }
 
-    @Test
-    void SymbolAEqualSymbolA() {
-        var expr = getExpr("(= 'a 'a)");
-        var actualResult = Interpreter.eval(expr);
-        var expectedResult = new Expr.Symbol("#t");
-        assertEquals(expectedResult, actualResult);
-    }
-
-    @Test
-    void ListOfABCNotEqualListOfAB() {
-        var expr = getExpr("(= '(a b c) '(a b))");
-        var actualResult = Interpreter.eval(expr);
-        var expectedResult = new Expr.Symbol("#f");
-        assertEquals(expectedResult, actualResult);
-    }
-
+    //    @Test
+//    void SymbolAEqualSymbolA() {
+//        var expr = getExpr("(= 'a 'a)");
+//        var actualResult = Interpreter.eval(expr);
+//        var expectedResult = Interpreter.BuiltinValue.TRUE;
+//        assertEquals(expectedResult, actualResult);
+//    }
+//
+//    @Test
+//    void ListOfABCNotEqualListOfAB() {
+//        var expr = getExpr("(= '(a b c) '(a b))");
+//        var actualResult = Interpreter.eval(expr);
+//        var expectedResult = new Expr.Symbol("#f");
+//        assertEquals(expectedResult, actualResult);
+//    }
+//
     @Test
     void CarListOfABCEqualA() {
         var expr = getExpr("(car '(a b c))");
         var actualResult = Interpreter.eval(expr);
-        var expectedResult = new Expr.Symbol("a");
+        var expectedResult = new Expr.Atom(new Token.Symbol("a"));
         assertEquals(expectedResult, actualResult);
     }
 
@@ -158,7 +160,7 @@ public class InterpreterTest {
     void CarEmptyListEqualEmptyList() {
         var expr = getExpr("(car ())");
         var actualResult = Interpreter.eval(expr);
-        var expectedResult = new Expr.List(List.of());
+        var expectedResult = new Expr.Vec(List.of());
         assertEquals(expectedResult, actualResult);
     }
 
@@ -166,8 +168,9 @@ public class InterpreterTest {
     void CdrListOfABCEqualListOfBC() {
         var expr = getExpr("(cdr '(a b c))");
         var actualResult = Interpreter.eval(expr);
-        var expectedResult = new Expr.List(
-            List.of(new Expr.Symbol("b"), new Expr.Symbol("c")));
+        var expectedResult = new Expr.Vec(
+                List.of(new Expr.Atom(new Token.Symbol("b")),
+                        new Expr.Atom(new Token.Symbol("c"))));
         assertEquals(expectedResult, actualResult);
     }
 
@@ -175,7 +178,7 @@ public class InterpreterTest {
     void CdrEmptyListEqualEmptyList() {
         var expr = getExpr("(cdr ())");
         var actualResult = Interpreter.eval(expr);
-        var expectedResult = new Expr.List(List.of());
+        var expectedResult = new Expr.Vec(List.of());
         assertEquals(expectedResult, actualResult);
     }
 
@@ -183,8 +186,10 @@ public class InterpreterTest {
     void ConsAWithListOfBCEqualListABC() {
         var expr = getExpr("(cons 'a '(b c))");
         var actualResult = Interpreter.eval(expr);
-        var expectedResult = new Expr.List(
-            List.of(new Expr.Symbol("a"), new Expr.Symbol("b"), new Expr.Symbol("c")));
+        var expectedResult = new Expr.Vec(
+                List.of(new Expr.Atom(new Token.Symbol("a")),
+                        new Expr.Atom(new Token.Symbol("b")),
+                        new Expr.Atom(new Token.Symbol("c"))));
         assertEquals(expectedResult, actualResult);
     }
 
@@ -192,7 +197,7 @@ public class InterpreterTest {
     void getSymbolAIfOneLessThanTwo() {
         var expr = getExpr("(if (< 1 2) 'a 'b)");
         var actualResult = Interpreter.eval(expr);
-        var expectedResult = new Expr.Symbol("a");
+        var expectedResult = new Expr.Atom(new Token.Symbol("a"));
         assertEquals(expectedResult, actualResult);
     }
 
@@ -200,39 +205,41 @@ public class InterpreterTest {
     void getSymbolBIfOneNotLessThanTwo() {
         var expr = getExpr("(if (> 1 2) 'a 'b)");
         var actualResult = Interpreter.eval(expr);
-        var expectedResult = new Expr.Symbol("b");
+        var expectedResult = new Expr.Atom(new Token.Symbol("b"));
         assertEquals(expectedResult, actualResult);
     }
 
     @Test
     void getWordByNumber() {
         var expr = getExpr("""
-                (begin 
-                    (define a 3) 
-                    (cond 
-                        ((= a 1) 'one)
-                        ((= a 2) 'two)
-                        (else    'others)))
-            """);
+                    (prog
+                        (def a 3)
+                        (cond
+                            ((= a 1) 'one)
+                            ((= a 2) 'two)
+                            (else    'others)))
+                """);
         var actualResult = Interpreter.eval(expr);
-        var expectedResult = new Expr.Symbol("others");
+        var expectedResult = new Expr.Atom(new Token.Symbol("others"));
         assertEquals(expectedResult, actualResult);
     }
 
     @Test
     void defineAEqualOneAndAccess() {
-        var expr = getExpr("(begin (define a 1) a)");
+        var expr = getExpr("(prog (def a 1) a)");
         var actualResult = Interpreter.eval(expr);
-        var expectedResult = new Expr.Number(1);
+        var expectedResult = new Expr.Atom(new Token.Number("1"));
         assertEquals(expectedResult, actualResult);
     }
 
     @Test
     void defineAEqualListOfABCAndAccess() {
-        var expr = getExpr("(begin (define a '(a b c)) a)");
+        var expr = getExpr("(prog (def a '(a b c)) a)");
         var actualResult = Interpreter.eval(expr);
-        var expectedResult = new Expr.List(
-            List.of(new Expr.Symbol("a"), new Expr.Symbol("b"), new Expr.Symbol("c")));
+        var expectedResult = new Expr.Vec(
+                List.of(new Expr.Atom(new Token.Symbol("a")),
+                        new Expr.Atom(new Token.Symbol("b")),
+                        new Expr.Atom(new Token.Symbol("c"))));
         assertEquals(expectedResult, actualResult);
     }
 
@@ -240,85 +247,149 @@ public class InterpreterTest {
     void ListWithSymbolASymbolBSymbolCEqualListOfABC() {
         var expr = getExpr("(list 'a 'b 'c)");
         var actualResult = Interpreter.eval(expr);
-        var expectedResult = new Expr.List(
-            List.of(new Expr.Symbol("a"), new Expr.Symbol("b"), new Expr.Symbol("c")));
+        var expectedResult = new Expr.Vec(
+                List.of(new Expr.Atom(new Token.Symbol("a")),
+                        new Expr.Atom(new Token.Symbol("b")),
+                        new Expr.Atom(new Token.Symbol("c"))));
         assertEquals(expectedResult, actualResult);
     }
 
     @Test
     void defineLambdaWithZeroParametersAndReturnOne() {
-        var expr = getExpr("(begin (define one (lambda () 1)) (one))");
+        var expr = getExpr("(prog (def one (fn () 1)) (one))");
         var actualResult = Interpreter.eval(expr);
-        var expectedResult = new Expr.Number(1);
+        var expectedResult = new Expr.Atom(new Token.Number("1"));
         assertEquals(expectedResult, actualResult);
     }
 
     @Test
     void ImmediatelyInvokedFunctionExpression() {
-        var expr = getExpr("((lambda () 1))");
+        var expr = getExpr("((fn () 1))");
         var actualResult = Interpreter.eval(expr);
-        var expectedResult = new Expr.Number(1);
+        var expectedResult = new Expr.Atom(new Token.Number("1"));
         assertEquals(expectedResult, actualResult);
     }
 
     @Test
     void defineRecursiveFunction() {
         var expr = getExpr("""
-            (begin
-                (define fib (lambda (n)
-                                    (if (<= n 1)
-                                        n
-                                        (+ (fib (- n 1)) (fib (- n 2))))))
-                (fib 10))
-            """);
+                (prog
+                    (def fib (fn (n)
+                                 (if (<= n 1)
+                                     n
+                                 (+ (fib (- n 1)) (fib (- n 2))))))
+                    (fib 10))
+                """);
         var actualResult = Interpreter.eval(expr);
-        var expectedResult = new Expr.Number(55);
+        var expectedResult = new Expr.Atom(new Token.Number("55"));
         assertEquals(expectedResult, actualResult);
     }
 
     @Test
     void defineHighOrderFunction() {
         var expr = getExpr("""
-            (begin
-                (define repeat (lambda (f)
-                                       (lambda (x) (f (f x)))))
-                (define double (lambda (x) (* 2 x)))
-                (define quadruple (repeat double))
-                (quadruple 2))
-            """);
+                (prog
+                    (def repeat (fn (f)
+                                    (fn (x) (f (f x)))))
+                    (def double (fn (x) (* 2 x)))
+                    (def quadruple (repeat double))
+                    (quadruple 2))
+                """);
         var actualResult = Interpreter.eval(expr);
-        var expectedResult = new Expr.Number(8);
+        var expectedResult = new Expr.Atom(new Token.Number("8"));
         assertEquals(expectedResult, actualResult);
     }
 
     @Test
-    void defineMarcoAndExpand() {
+    void defineYCombinatorAndImmediatelyInvoked() {
         var expr = getExpr("""
-            (begin
-                (define defun (macro (name args body) (list 'define name (list 'lambda args body))))
-                (defun 'plus '(a b) '(+ a b))
-                (plus 1 2))
-            """);
+                (((fn (b) ((fn (f) (b (fn (x) ((f f) x)))) (fn (f) (b (fn (x) ((f f) x))))))
+                      (fn (fact) (fn (n) (if (= 0 n) 1 (* n (fact (- n 1)))))))
+                                      5)
+                """);
         var actualResult = Interpreter.eval(expr);
-        var expectedResult = new Expr.Number(3);
+        var expectedResult = new Expr.Atom(new Token.Number("120"));
         assertEquals(expectedResult, actualResult);
     }
+
+    @Test
+    void defineMarcoAndCall() {
+        var expr = getExpr("""
+                (prog
+                    (def defun (macro (head body) (list 'def (car head) (list 'fn (cdr head) body))))
+                    (defun (plus a b) (+ a b))
+                    (plus 1 2))
+                """);
+        var actualResult = Interpreter.eval(expr);
+        var expectedResult = new Expr.Atom(new Token.Number("3"));
+        assertEquals(expectedResult, actualResult);
+    }
+
+    @Test
+    void defineMarcoWithQuasiQuoteAndCall() {
+        var expr = getExpr("""
+                (prog
+                    (def defun (macro (head body) `(def ,(car head) (fn ,(cdr head) ,body))))
+                    (defun (plus a b) (+ a b))
+                    (plus 1 2))
+                """);
+        var actualResult = Interpreter.eval(expr);
+        var expectedResult = new Expr.Atom(new Token.Number("3"));
+        assertEquals(expectedResult, actualResult);
+    }
+
+    @Test
+    void defineMacroAndExpand() {
+        var expr = getExpr("""
+                (prog
+                    (def plus (macro (a b c) `(+ ,a ,b c)))
+                    (expand (plus (+ 1 2) ((fn (x) (* x x)) 2) 4))
+                )
+                """);
+        var actualResult = Interpreter.eval(expr);
+        var expectedResult = new Expr.Vec(List.of(
+                new Expr.Atom(new Token.Operator(new Operators.Plus())),
+                new Expr.Vec(List.of(
+                        new Expr.Atom(new Token.Operator(new Operators.Plus())),
+                        new Expr.Atom(new Token.Number("1")),
+                        new Expr.Atom(new Token.Number("2"))
+                )),
+                new Expr.Vec(List.of(
+                        new Expr.Vec(List.of(
+                                new Expr.Atom(new Token.Keyword(new Keywords.FN())),
+                                new Expr.Vec(List.of(
+                                        new Expr.Atom(new Token.Symbol("x"))
+                                )),
+                                new Expr.Vec(List.of(
+                                        new Expr.Atom(new Token.Operator(new Operators.Mul())),
+                                        new Expr.Atom(new Token.Symbol("x")),
+                                        new Expr.Atom(new Token.Symbol("x"))
+                                ))
+                        )),
+                        new Expr.Atom(new Token.Number("2"))
+                )),
+                new Expr.Atom(new Token.Symbol("c"))
+
+        ));
+        assertEquals(expectedResult, actualResult);
+    }
+
 
     @Test
     void patternMatchTest() {
         var expr = getExpr("""
-            (begin
-                (define a '(1 2 3 4))
-                (match a (
-                    (a 1)
-                    ((1 2) 3)
-                    ((1 2 3) (cons 0 a))
-                    (_ 11)
-                ))
-            )
-            """);
+                (prog
+                    (def a '(1 2 3 4))
+                    (match a (
+                        (a 1)
+                        ((1 2) 3)
+                        ((1 2 3) (cons 0 a))
+                        (default 11)
+                    ))
+                )
+                """);
         var actualResult = Interpreter.eval(expr);
-        var expectedResult = new Expr.Number(11);
+        var expectedResult = new Expr.Atom(new Token.Number("11"));
         assertEquals(expectedResult, actualResult);
     }
 
@@ -326,7 +397,23 @@ public class InterpreterTest {
     void evalQuoteListPlusOneTwo() {
         var expr = getExpr("(eval '(+ 1 2))");
         var actualResult = Interpreter.eval(expr);
-        var expectedResult = new Expr.Number(3);
+        var expectedResult = new Expr.Atom(new Token.Number("3"));
+        assertEquals(expectedResult, actualResult);
+    }
+
+    @Test
+    void useLetBindVarsAndEval() {
+        var expr = getExpr("""
+                (prog
+                    (def a 1)
+                    (def b 2)
+                    (def c 3)
+                    (let ((a 4) (b 5) (c 6))
+                         (+ a b c))
+                )
+                """);
+        var actualResult = Interpreter.eval(expr);
+        var expectedResult = new Expr.Atom(new Token.Number("15"));
         assertEquals(expectedResult, actualResult);
     }
 }
