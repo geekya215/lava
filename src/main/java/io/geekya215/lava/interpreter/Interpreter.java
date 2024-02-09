@@ -30,7 +30,7 @@ public final class Interpreter {
     public static Expr eval(Expr expr, Env env) {
         return switch (expr) {
             case Expr.Quote(Expr quote) -> quote;
-            case Expr.QuasiQuote(Expr quasiQuote) -> new Expr.Quote(evalQuasiQuote(quasiQuote, env));
+            case Expr.QuasiQuote(Expr quasiQuote) -> evalQuasiQuote(quasiQuote, env);
             case Expr.Atom(Token tok) -> {
                 if (tok instanceof Token.Symbol(String symbolName)) {
                     yield env.get(symbolName)
@@ -64,6 +64,7 @@ public final class Interpreter {
                         case Keywords.EVAL _ -> evalEval(rest, env);
                         case Keywords.MATCH _ -> evalMatch(rest, env);
                         case Keywords.MACRO _ -> evalMacro(rest, env);
+                        case Keywords.EXPAND _ -> evalExpand(rest, env);
 
                         default -> throw new EvalException("Unexpected keyword: " + keywords);
                     };
@@ -85,15 +86,18 @@ public final class Interpreter {
 
                         default -> throw new EvalException("Unsupported operator: " + operators);
                     };
-                    case Expr.Atom(Token.Symbol(String fnName)) -> {
-                        Expr fn = env.get(fnName)
-                                .getOrThrow(() -> new EvalException("attempted to call undefined function: " + fnName));
-                        yield applyFn(fnName, fn, rest, env);
+                    case Expr.Atom(Token.Symbol(String name)) -> {
+                        Expr fnOrMacro = env.get(name)
+                                .getOrThrow(() -> new EvalException("attempted to call undefined function: " + name));
+                        yield switch (fnOrMacro) {
+                            case Expr.FN fn -> applyFn(name, fn, rest, env);
+                            case Expr.MACRO macro -> eval(expandMacro(name, macro, rest, env), env);
+                            default -> throw new EvalException("expected function or macro, but got " + fnOrMacro);
+                        };
                     }
                     default -> {
                         Expr fn = eval(head, env);
-                        List<Expr> args = rest.stream().map(e -> eval(e, env)).toList();
-                        yield applyFn("[dynamic]", fn, args, env);
+                        yield applyFn("[dynamic]", fn, rest, env);
                     }
                 };
             }
@@ -275,7 +279,66 @@ public final class Interpreter {
         // Todo
         // basic
         // enable &whole &rest
-        return null;
+        if (args.size() == 2 && args.getFirst() instanceof Expr.Vec(List<Expr> params)) {
+            List<String> paramsList = params.stream().map(param -> {
+                if (param instanceof Expr.Atom(Token.Symbol(String s))) {
+                    return s;
+                } else {
+                    throw new EvalException("expected symbol value, got " + param);
+                }
+            }).toList();
+            return new Expr.MACRO(paramsList, args.getLast());
+        } else {
+            throw new EvalException("invalid usage of 'macro'");
+        }
+    }
+
+    private static Expr expandMacro(String macroName, Expr macro, List<Expr> args, Env env) {
+        switch (macro) {
+            case Expr.MACRO(List<String> params, Expr body) -> {
+                Env newEnv = Env.extend(env);
+                if (params.size() == args.size()) {
+                    for (int i = 0; i < params.size(); i++) {
+                        newEnv.set(params.get(i), args.get(i));
+                    }
+                    return eval(body, newEnv);
+                } else {
+                    throw new EvalException("called macro "
+                            + macroName
+                            + " with "
+                            + args.size()
+                            + " argument(s), expected "
+                            + params.size()
+                            + " argument(s)");
+                }
+            }
+            default -> throw new EvalException("expected macro, but got " + macro);
+        }
+    }
+
+    private static Expr evalExpand(List<Expr> args, Env env) {
+        if (args.size() == 1
+                && args.getFirst() instanceof Expr.Vec(List<Expr> list)
+                && !list.isEmpty()
+                && list.getFirst() instanceof Expr.Atom(Token.Symbol(String macroName))
+                && eval(list.getFirst(), env) instanceof Expr.MACRO macro
+        ) {
+            List<String> params = macro.params();
+            List<Expr> macroArgs = list.subList(1, list.size());
+            if (params.size() == macroArgs.size()) {
+                return expandMacro(macroName, macro, macroArgs, env);
+            } else {
+                throw new EvalException("expand macro "
+                        + macroName
+                        + " with "
+                        + args.size()
+                        + " argument(s), expected "
+                        + params.size()
+                        + " argument(s)");
+            }
+        } else {
+            throw new EvalException("invalid usage of 'expand'");
+        }
     }
 
     private static Expr applyArithmetic(List<Expr> args, BinaryOperator<Integer> func, Env env) {

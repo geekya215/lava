@@ -134,6 +134,7 @@ public final class Tokenizer {
                             case "MATCH", "match" -> new Token.Keyword(new Keywords.MATCH());
                             case "DEFAULT", "default" -> new Token.Keyword(new Keywords.DEFAULT());
                             case "MACRO", "macro" -> new Token.Keyword(new Keywords.MACRO());
+                            case "EXPAND", "expand" -> new Token.Keyword(new Keywords.EXPAND());
                             default -> new Token.Symbol(s);
                         };
                         yield new Option.Some<>(tok);
