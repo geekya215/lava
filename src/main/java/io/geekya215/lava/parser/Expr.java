@@ -9,7 +9,8 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 public sealed interface Expr extends Signature
-        permits Expr.Atom, Expr.FN, Expr.MACRO, Expr.QuasiQuote, Expr.Quote, Expr.Unit, Expr.Unquote, Expr.Vec {
+        permits Expr.Atom, Expr.FN, Expr.MACRO, Expr.QuasiQuote, Expr.Quote, Expr.Splicing, Expr.Unit, Expr.Unquote,
+        Expr.UnquoteSplicing, Expr.Vec {
     record Vec(List<Expr> exprs) implements Expr {
         @Override
         public String toString() {
@@ -18,7 +19,7 @@ public sealed interface Expr extends Signature
 
         @Override
         public String descriptor() {
-            return "[" + exprs.stream().map(Signature::descriptor).collect(Collectors.joining(",")) + "]";
+            return "[" + exprs.stream().map(Signature::descriptor).collect(Collectors.joining(", ")) + "]";
         }
     }
 
@@ -58,6 +59,18 @@ public sealed interface Expr extends Signature
         }
     }
 
+    record UnquoteSplicing(Expr expr) implements Expr {
+        @Override
+        public String toString() {
+            return ",@" + expr;
+        }
+
+        @Override
+        public String descriptor() {
+            return "Unquote Splicing{" + expr + "}";
+        }
+    }
+
     record Atom(Token tok) implements Expr {
         @Override
         public String toString() {
@@ -82,7 +95,7 @@ public sealed interface Expr extends Signature
         public String descriptor() {
             return "FN{" +
                     "params=" + params +
-                    ", body=" + body +
+                    ", body=" + body.descriptor() +
                     "}";
         }
     }
@@ -97,8 +110,20 @@ public sealed interface Expr extends Signature
         public String descriptor() {
             return "MACRO{" +
                     "params=" + params +
-                    ", body=" + body +
+                    ", body=" + body.descriptor() +
                     '}';
+        }
+    }
+
+    record Splicing(List<Expr> exprs) implements Expr {
+        @Override
+        public String toString() {
+            return exprs.stream().map(Objects::toString).collect(Collectors.joining(" "));
+        }
+
+        @Override
+        public String descriptor() {
+            return "Splicing{" + exprs + '}';
         }
     }
 

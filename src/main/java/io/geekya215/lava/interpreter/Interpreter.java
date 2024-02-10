@@ -30,7 +30,18 @@ public final class Interpreter {
     public static Expr eval(Expr expr, Env env) {
         return switch (expr) {
             case Expr.Quote(Expr quote) -> quote;
-            case Expr.QuasiQuote(Expr quasiQuote) -> evalQuasiQuote(quasiQuote, env);
+            case Expr.QuasiQuote(Expr quasiQuote) -> {
+                Expr res = evalQuasiQuote(quasiQuote, env);
+                if (res instanceof Expr.Splicing && env == runtimeEnv) {
+                    throw new EvalException("invalid context within quasi quote");
+                } else if (res instanceof Expr.Vec(List<Expr> exprs)) {
+                    List<Expr> list = new ArrayList<>();
+                    expandSplicing(exprs, list);
+                    yield new Expr.Vec(list);
+                } else {
+                    yield res;
+                }
+            }
             case Expr.Atom(Token tok) -> {
                 if (tok instanceof Token.Symbol(String symbolName)) {
                     yield env.get(symbolName)
@@ -109,9 +120,31 @@ public final class Interpreter {
     private static Expr evalQuasiQuote(Expr quasiQuote, Env env) {
         return switch (quasiQuote) {
             case Expr.Unquote(Expr unquote) -> eval(unquote, env);
+            case Expr.UnquoteSplicing(Expr splicing) -> {
+                Expr res = eval(splicing, env);
+                if (res instanceof Expr.Vec(List<Expr> exprs)) {
+                    yield new Expr.Splicing(exprs);
+                } else {
+                    throw new EvalException("invalid usage of unquote splicing");
+                }
+            }
             case Expr.Vec(List<Expr> exprs) -> new Expr.Vec(exprs.stream().map(e -> evalQuasiQuote(e, env)).toList());
             default -> quasiQuote;
         };
+    }
+
+    public static void expandSplicing(List<Expr> exprs, List<Expr> list) {
+        for (Expr expr : exprs) {
+            if (expr instanceof Expr.Splicing(List<Expr> splicing)) {
+                list.addAll(splicing);
+            } else if (expr instanceof Expr.Vec(List<Expr> vec)) {
+                List<Expr> sub = new ArrayList<>();
+                expandSplicing(vec, sub);
+                list.add(new Expr.Vec(sub));
+            } else {
+                list.add(expr);
+            }
+        }
     }
 
     private static Expr evalEq(List<Expr> args, Env env) {

@@ -339,6 +339,30 @@ public class InterpreterTest {
     }
 
     @Test
+    void quasiQuoteWithSplicing() {
+        var expr = getExpr("""
+                (prog
+                    (def numbers '(1 2 3))
+                    `(+ a ,@numbers (,@numbers))
+                )
+                """);
+        var actualResult = Interpreter.eval(expr);
+        var expectedResult = new Expr.Vec(List.of(
+                new Expr.Atom(new Token.Operator(new Operators.Plus())),
+                new Expr.Atom(new Token.Symbol("a")),
+                new Expr.Atom(new Token.Number("1")),
+                new Expr.Atom(new Token.Number("2")),
+                new Expr.Atom(new Token.Number("3")),
+                new Expr.Vec(List.of(
+                        new Expr.Atom(new Token.Number("1")),
+                        new Expr.Atom(new Token.Number("2")),
+                        new Expr.Atom(new Token.Number("3"))
+                ))
+        ));
+        assertEquals(expectedResult, actualResult);
+    }
+
+    @Test
     void defineMacroAndExpand() {
         var expr = getExpr("""
                 (prog

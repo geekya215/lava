@@ -67,7 +67,16 @@ public final class Tokenizer {
 
                 case '\'' -> consume(chars, new Token.Quote());
                 case '`' -> consume(chars, new Token.QuasiQuote());
-                case ',' -> consume(chars, new Token.Unquote());
+                case ',' -> {
+                    chars.next();
+                    yield switch (chars.peek()) {
+                        case Option.Some(Character ch) -> switch (ch) {
+                            case '@' -> consume(chars, new Token.UnquoteSplicing());
+                            default -> Option.some(new Token.Unquote());
+                        };
+                        default -> Option.some(new Token.Unquote());
+                    };
+                }
 
                 case '(' -> consume(chars, new Token.LeftParen());
                 case ')' -> consume(chars, new Token.RightParen());

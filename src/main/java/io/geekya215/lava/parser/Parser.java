@@ -24,6 +24,7 @@ public final class Parser {
             case Token.Quote _ -> new Expr.Quote(parseExpr(tokens));
             case Token.QuasiQuote _ -> new Expr.QuasiQuote(parseExpr(tokens));
             case Token.Unquote _ -> new Expr.Unquote(parseExpr(tokens));
+            case Token.UnquoteSplicing _ -> new Expr.UnquoteSplicing(parseExpr(tokens));
             default -> new Expr.Atom(head);
         };
     }
