@@ -1,0 +1,86 @@
+name: Lava builds
+on:
+  push:
+    tags:
+      - '*'
+jobs:
+  jar-build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: 'adopt'
+          java-version: '21'
+
+      - name: Build jar file
+        uses: gradle/gradle-build-action@v2
+        with:
+          arguments: shadowJar --no-daemon --warning-mode all
+
+      - name: Copy jar file
+        run: cp ./build/libs/lava.jar ./lava.jar
+
+      - name: Upload binaries to release
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: lava.jar
+          asset_name: lava-${{  github.ref_name }}.jar
+          tag: ${{ github.ref }}
+          body: "Lava ${{  github.ref_name }} release"
+
+  native-build:
+    runs-on: ${{ matrix.os }}
+    permissions:
+      contents: write
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            platform: 'linux-x64'
+            binaryExt: ''
+          - os: macos-latest
+            platform: 'macos-x64'
+            binaryExt: ''
+          - os: windows-latest
+            platform: 'windows-x64'
+            binaryExt: '.exe'
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: graalvm/setup-graalvm@v1
+        with:
+          java-version: '21'
+          distribution: 'graalvm-community'
+          set-java-home: 'true'
+          cache: 'gradle'
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          native-image-job-reports: 'true'
+
+      - name: Tell gradle where's my JDK
+        run: echo 'org.gradle.java.installations.fromEnv=JAVA_HOME,GRAALVM_HOME' >> gradle.properties
+
+      - name: Show java toolchains
+        uses: gradle/gradle-build-action@v2
+        with:
+          arguments: javaToolchains --no-daemon --warning-mode all
+
+      - name: Compile native image
+        uses: gradle/gradle-build-action@v2
+        with:
+          arguments: nativeCompile --no-daemon --warning-mode all
+
+      - name: Copy native image
+        run: cp ./build/native/nativeCompile/lava${{ matrix.binaryExt }} ./${{ matrix.platform }}
+
+      - name: Upload binaries to release
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: ${{ matrix.platform }}
+          asset_name: lava-native-${{  github.ref_name }}-${{ matrix.platform }}${{ matrix.binaryExt }}
+          tag: ${{ github.ref }}
+          body: "Lava ${{  github.ref_name }} release"

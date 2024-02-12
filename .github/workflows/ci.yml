@@ -1,4 +1,4 @@
-name: Lava CI
+name: Lava test
 
 on:
   push:
@@ -10,7 +10,7 @@ permissions:
   contents: read
 
 jobs:
-  test:
+  unit-test:
     runs-on: ubuntu-latest
 
     steps:
