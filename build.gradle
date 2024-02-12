@@ -6,8 +6,6 @@ plugins {
 }
 
 group 'io.geekya215'
-version '1.0.3'
-
 repositories {
     mavenCentral()
 }
@@ -23,16 +21,22 @@ test {
     useJUnitPlatform()
 }
 
-tasks.withType(JavaCompile) {
+tasks.withType(JavaCompile).configureEach {
     options.compilerArgs.add("--enable-preview")
 }
 
-tasks.withType(JavaExec) {
+tasks.withType(JavaExec).configureEach {
     jvmArgs("--enable-preview")
 }
 
-tasks.withType(Test) {
+tasks.withType(Test).configureEach {
     jvmArgs("--enable-preview")
+}
+
+shadowJar {
+    archiveBaseName.set('lava')
+    archiveClassifier.set('')
+    archiveVersion.set('')
 }
 
 jar {
