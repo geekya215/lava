@@ -2,8 +2,10 @@ package io.geekya215.lava.interpreter;
 
 
 import io.geekya215.lava.common.Option;
+import io.geekya215.lava.common.Peekable;
 import io.geekya215.lava.exception.EvalException;
 import io.geekya215.lava.parser.Expr;
+import io.geekya215.lava.tokenizer.Annotations;
 import io.geekya215.lava.tokenizer.Keywords;
 import io.geekya215.lava.tokenizer.Operators;
 import io.geekya215.lava.tokenizer.Token;
@@ -328,18 +330,49 @@ public final class Interpreter {
     }
 
     private static Expr evalMacro(List<Expr> args, Env env) {
-        // Todo
-        // basic
-        // enable &whole &rest
         if (args.size() == 2 && args.getFirst() instanceof Expr.Vec(List<Expr> params)) {
-            List<String> paramsList = params.stream().map(param -> {
-                if (param instanceof Expr.Atom(Token.Symbol(String s))) {
-                    return s;
-                } else {
-                    throw new EvalException("expected symbol value, got " + param);
+            Peekable<Expr> exprs = new Peekable<>(params.iterator());
+            List<Expr> paramList = new ArrayList<>();
+            while (exprs.peek() instanceof Option.Some<Expr>(Expr expr)) {
+                switch (expr) {
+                    case Expr.Atom(Token.Symbol _) -> paramList.add(expr);
+                    case Expr.Atom(Token.Annotation(Annotations annotations)) -> {
+                        exprs.next();
+                        if (exprs.peek() instanceof Option.Some<Expr>(Expr.Atom(Token.Symbol(String s)))) {
+                            paramList.add(new Expr.Annotation(annotations, s));
+                        } else {
+                            throw new EvalException("expected symbol value for annotation " + annotations);
+                        }
+                    }
+                    default -> throw new EvalException("invalid parameter list for macro definition");
                 }
-            }).toList();
-            return new Expr.MACRO(paramsList, args.getLast());
+                exprs.next();
+            }
+
+            int wholeCnt = 0;
+            int wholeIndex = -1;
+            int restCnt = 0;
+            int restIndex = -1;
+            for (int i = 0; i < paramList.size(); i++) {
+                Expr e = paramList.get(i);
+                if (e instanceof Expr.Annotation(Annotations.WHOLE _, _)) {
+                    wholeCnt++;
+                    wholeIndex = i;
+                } else if (e instanceof Expr.Annotation(Annotations.REST _, _)) {
+                    restCnt++;
+                    restIndex = i;
+                }
+            }
+
+            if (wholeCnt > 1 || (wholeCnt == 1 && wholeIndex != 0)) {
+                throw new EvalException("whole annotation must be first args and only occur once");
+            }
+
+            if (restCnt > 1 || (restCnt == 1 && restIndex != paramList.size() - 1)) {
+                throw new EvalException("rest annotation must be last args and only occur once");
+            }
+
+            return new Expr.MACRO(paramList, args.getLast());
         } else {
             throw new EvalException("invalid usage of 'macro'");
         }
@@ -347,22 +380,55 @@ public final class Interpreter {
 
     private static Expr expandMacro(String macroName, Expr macro, List<Expr> args, Env env) {
         switch (macro) {
-            case Expr.MACRO(List<String> params, Expr body) -> {
+            case Expr.MACRO(List<Expr> params, Expr body) -> {
                 Env newEnv = Env.extend(env);
-                if (params.size() == args.size()) {
-                    for (int i = 0; i < params.size(); i++) {
-                        newEnv.set(params.get(i), args.get(i));
+                if (params.isEmpty()) {
+                    if (args.isEmpty()) {
+                        return eval(body, newEnv);
+                    } else {
+                        throw new EvalException("");
                     }
-                    return eval(body, newEnv);
                 } else {
-                    throw new EvalException("called macro "
-                            + macroName
-                            + " with "
-                            + args.size()
-                            + " argument(s), expected "
-                            + params.size()
-                            + " argument(s)");
+                    if (params.getFirst() instanceof Expr.Annotation(Annotations.WHOLE _, String w)) {
+                        List<Expr> whole = new ArrayList<>(args);
+                        whole.addFirst(new Expr.Atom(new Token.Symbol(macroName.toUpperCase())));
+                        newEnv.set(w, new Expr.Vec(whole));
+                        params.removeFirst();
+                    }
+
+                    if (!params.isEmpty() && params.getLast() instanceof Expr.Annotation(Annotations.REST _, String r)) {
+                        params.removeLast();
+                        if (params.size() > args.size()) {
+                            throw new EvalException("");
+                        }
+                        for (int i = 0; i < params.size(); i++) {
+                            if (params.get(i) instanceof Expr.Atom(Token.Symbol(String name))) {
+                                newEnv.set(name, args.get(i));
+                            }
+                        }
+                        Expr rest = new Expr.Vec(args.subList(params.size(), args.size()));
+                        newEnv.set(r, rest);
+                    } else {
+                        if (params.size() == args.size()) {
+                            for (int i = 0; i < params.size(); i++) {
+                                if (params.get(i) instanceof Expr.Atom(Token.Symbol(String name))) {
+                                    newEnv.set(name, args.get(i));
+                                }
+                            }
+                        } else {
+                            throw new EvalException("called macro "
+                                    + macroName
+                                    + " with "
+                                    + args.size()
+                                    + " argument(s), expected "
+                                    + params.size()
+                                    + " argument(s)");
+                        }
+                    }
+
+                    return eval(body, newEnv);
                 }
+
             }
             default -> throw new EvalException("expected macro, but got " + macro);
         }
@@ -375,19 +441,8 @@ public final class Interpreter {
                 && list.getFirst() instanceof Expr.Atom(Token.Symbol(String macroName))
                 && eval(list.getFirst(), env) instanceof Expr.MACRO macro
         ) {
-            List<String> params = macro.params();
             List<Expr> macroArgs = list.subList(1, list.size());
-            if (params.size() == macroArgs.size()) {
                 return expandMacro(macroName, macro, macroArgs, env);
-            } else {
-                throw new EvalException("expand macro "
-                        + macroName
-                        + " with "
-                        + args.size()
-                        + " argument(s), expected "
-                        + params.size()
-                        + " argument(s)");
-            }
         } else {
             throw new EvalException("invalid usage of 'expand'");
         }

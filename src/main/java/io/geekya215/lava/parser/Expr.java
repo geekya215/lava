@@ -2,6 +2,7 @@ package io.geekya215.lava.parser;
 
 import io.geekya215.lava.common.Signature;
 import io.geekya215.lava.interpreter.Env;
+import io.geekya215.lava.tokenizer.Annotations;
 import io.geekya215.lava.tokenizer.Token;
 
 import java.util.List;
@@ -9,8 +10,8 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 public sealed interface Expr extends Signature
-        permits Expr.Atom, Expr.FN, Expr.MACRO, Expr.QuasiQuote, Expr.Quote, Expr.Splicing, Expr.Unit, Expr.Unquote,
-        Expr.UnquoteSplicing, Expr.Vec {
+        permits Expr.Annotation, Expr.Atom, Expr.FN, Expr.MACRO, Expr.QuasiQuote, Expr.Quote, Expr.Splicing, Expr.Unit,
+        Expr.Unquote, Expr.UnquoteSplicing, Expr.Vec {
     record Vec(List<Expr> exprs) implements Expr {
         @Override
         public String toString() {
@@ -31,7 +32,7 @@ public sealed interface Expr extends Signature
 
         @Override
         public String descriptor() {
-            return "Quote{" + expr + "}";
+            return "Quote{" + expr.descriptor() + "}";
         }
     }
 
@@ -43,7 +44,7 @@ public sealed interface Expr extends Signature
 
         @Override
         public String descriptor() {
-            return "QuasiQuote{" + expr + "}";
+            return "QuasiQuote{" + expr.descriptor() + "}";
         }
     }
 
@@ -55,7 +56,7 @@ public sealed interface Expr extends Signature
 
         @Override
         public String descriptor() {
-            return "Unquote{" + expr + "}";
+            return "Unquote{" + expr.descriptor() + "}";
         }
     }
 
@@ -67,7 +68,7 @@ public sealed interface Expr extends Signature
 
         @Override
         public String descriptor() {
-            return "Unquote Splicing{" + expr + "}";
+            return "Unquote Splicing{" + expr.descriptor() + "}";
         }
     }
 
@@ -100,10 +101,10 @@ public sealed interface Expr extends Signature
         }
     }
 
-    record MACRO(List<String> params, Expr body) implements Expr {
+    record MACRO(List<Expr> params, Expr body) implements Expr {
         @Override
         public String toString() {
-            return "(macro (" + String.join(" ", params) + ") " + body.toString() + ")";
+            return "(macro (" + params.stream().map(Objects::toString).collect(Collectors.joining(", ")) + ") " + body.toString() + ")";
         }
 
         @Override
@@ -112,6 +113,18 @@ public sealed interface Expr extends Signature
                     "params=" + params +
                     ", body=" + body.descriptor() +
                     '}';
+        }
+    }
+
+    record Annotation(Annotations annotations, String name) implements Expr {
+        @Override
+        public String toString() {
+            return "&" + annotations + " " + name;
+        }
+
+        @Override
+        public String descriptor() {
+            return "Annotation{" + name + ": " + annotations + "}";
         }
     }
 

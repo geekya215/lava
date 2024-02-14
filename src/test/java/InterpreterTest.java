@@ -339,6 +339,33 @@ public class InterpreterTest {
     }
 
     @Test
+    void defineMarcoWithAnnotation() {
+        var expr = getExpr("""
+                (prog
+                    (def test (macro (&whole w a b &rest r) `(,w ,a ,b ,r)))
+                    (expand (test 1 2 3 4))
+                )
+                """);
+        var actualResult = Interpreter.eval(expr);
+        var expectedResult = new Expr.Vec(List.of(
+                new Expr.Vec(List.of(
+                        new Expr.Atom(new Token.Symbol("TEST")),
+                        new Expr.Atom(new Token.Number("1")),
+                        new Expr.Atom(new Token.Number("2")),
+                        new Expr.Atom(new Token.Number("3")),
+                        new Expr.Atom(new Token.Number("4"))
+                )),
+                new Expr.Atom(new Token.Number("1")),
+                new Expr.Atom(new Token.Number("2")),
+                new Expr.Vec(List.of(
+                        new Expr.Atom(new Token.Number("3")),
+                        new Expr.Atom(new Token.Number("4"))
+                ))
+        ));
+        assertEquals(expectedResult, actualResult);
+    }
+
+    @Test
     void quasiQuoteWithSplicing() {
         var expr = getExpr("""
                 (prog
@@ -397,7 +424,6 @@ public class InterpreterTest {
         ));
         assertEquals(expectedResult, actualResult);
     }
-
 
     @Test
     void patternMatchTest() {

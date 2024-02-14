@@ -112,6 +112,16 @@ public final class Tokenizer {
                     };
 
                 }
+                case '&' -> {
+                    chars.next();
+                    String s = peekTakeWhite(chars, Character::isAlphabetic);
+                    Token tok = switch (s) {
+                        case "whole" -> new Token.Annotation(new Annotations.WHOLE());
+                        case "rest" -> new Token.Annotation(new Annotations.REST());
+                        default -> throw new TokenizeException("unknown macro parameter annotation");
+                    };
+                    yield new Option.Some<>(tok);
+                }
 
                 case '_' -> consume(chars, new Token.Underscore());
 
