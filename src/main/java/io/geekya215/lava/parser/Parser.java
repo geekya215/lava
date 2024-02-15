@@ -12,7 +12,8 @@ public final class Parser {
     public static Expr parse(String src) {
         Tokenizer tokenizer = new Tokenizer(src);
         List<Token> tokens = tokenizer.tokenize().stream()
-                .filter(t -> !(t instanceof Token.SpaceChar)).collect(Collectors.toList());
+                .filter(t -> !(t instanceof Token.SpaceChar || t instanceof Token.Comment))
+                .collect(Collectors.toList());
         return parseExpr(tokens);
     }
 

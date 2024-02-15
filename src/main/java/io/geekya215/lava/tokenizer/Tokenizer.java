@@ -123,6 +123,12 @@ public final class Tokenizer {
                     yield new Option.Some<>(tok);
                 }
 
+                case ';' -> {
+                    chars.next();
+                    String s = peekTakeWhite(chars, ch -> ch != '\n');
+                    yield new Option.Some<>(new Token.Comment(s));
+                }
+
                 case '_' -> consume(chars, new Token.Underscore());
 
                 default -> {
