@@ -1,19 +1,21 @@
 package io.geekya215.lava.common;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.Iterator;
 
 public final class Peekable<E> {
-    private final Iterator<E> iter;
+    private @NotNull final Iterator<E> iter;
     private boolean peeked;
-    private Option<E> value;
+    private @NotNull Option<E> value;
 
-    public Peekable(Iterator<E> iter) {
+    public Peekable(@NotNull final Iterator<E> iter) {
         this.iter = iter;
         this.peeked = false;
         this.value = Option.none();
     }
 
-    public Option<E> peek() {
+    public @NotNull Option<E> peek() {
         if (peeked) {
             return value;
         }
@@ -29,7 +31,7 @@ public final class Peekable<E> {
         return value;
     }
 
-    public Option<E> next() {
+    public @NotNull Option<E> next() {
         if (peeked) {
             peeked = false;
             return value;
