@@ -132,22 +132,22 @@ public class InterpreterTest {
         assertEquals(expectedResult, actualResult);
     }
 
-    //    @Test
-//    void SymbolAEqualSymbolA() {
-//        var expr = getExpr("(= 'a 'a)");
-//        var actualResult = Interpreter.eval(expr);
-//        var expectedResult = Interpreter.BuiltinValue.TRUE;
-//        assertEquals(expectedResult, actualResult);
-//    }
-//
-//    @Test
-//    void ListOfABCNotEqualListOfAB() {
-//        var expr = getExpr("(= '(a b c) '(a b))");
-//        var actualResult = Interpreter.eval(expr);
-//        var expectedResult = new Expr.Symbol("#f");
-//        assertEquals(expectedResult, actualResult);
-//    }
-//
+    @Test
+    void SymbolAEqualSymbolA() {
+        var expr = getExpr("(eq 'a 'a)");
+        var actualResult = Interpreter.eval(expr);
+        var expectedResult = Interpreter.BuiltinValue.TRUE;
+        assertEquals(expectedResult, actualResult);
+    }
+
+    @Test
+    void ListOfABCNotEqualListOfAB() {
+        var expr = getExpr("(eq '(a b c) '(a b))");
+        var actualResult = Interpreter.eval(expr);
+        var expectedResult = Interpreter.BuiltinValue.FALSE;
+        assertEquals(expectedResult, actualResult);
+    }
+
     @Test
     void CarListOfABCEqualA() {
         var expr = getExpr("(car '(a b c))");
