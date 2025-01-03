@@ -1,5 +1,7 @@
 package io.geekya215.lava.tokenizer;
 
+import org.jetbrains.annotations.NotNull;
+
 public sealed interface Token
         permits Token.Annotation, Token.Comment, Token.EOF, Token.Keyword, Token.LeftParen, Token.Number, Token.Operator,
         Token.QuasiQuote, Token.Quote, Token.RightParen, Token.SpaceChar, Token.Symbol, Token.Underscore, Token.Unquote,
@@ -29,60 +31,60 @@ public sealed interface Token
     record QuasiQuote() implements Token {
         @Override
         public String toString() {
-            return "QuasiQuote";
+            return "`";
         }
     }
 
     record Unquote() implements Token {
         @Override
         public String toString() {
-            return "Unquote";
+            return ",";
         }
     }
 
     record UnquoteSplicing() implements Token {
         @Override
         public String toString() {
-            return "UnquoteSplicing";
+            return ",@";
         }
     }
 
-    record Operator(Operators operators) implements Token {
+    record Operator(@NotNull Operators operators) implements Token {
         @Override
         public String toString() {
             return operators.toString();
         }
     }
 
-    record Keyword(Keywords keywords) implements Token {
+    record Keyword(@NotNull Keywords keywords) implements Token {
         @Override
         public String toString() {
             return keywords.toString();
         }
     }
 
-    record Annotation(Annotations annotations) implements Token {
+    record Annotation(@NotNull Annotations annotations) implements Token {
         @Override
         public String toString() {
             return annotations.toString();
         }
     }
 
-    record Symbol(String value) implements Token {
+    record Symbol(@NotNull String value) implements Token {
         @Override
         public String toString() {
             return value;
         }
     }
 
-    record Number(String value) implements Token {
+    record Number(@NotNull String value) implements Token {
         @Override
         public String toString() {
             return value;
         }
     }
 
-    record SpaceChar(WhiteSpace ws) implements Token {
+    record SpaceChar(@NotNull WhiteSpace ws) implements Token {
         @Override
         public String toString() {
             return ws.toString();
@@ -96,7 +98,7 @@ public sealed interface Token
         }
     }
 
-    record Comment(String s) implements Token {
+    record Comment(@NotNull String s) implements Token {
         @Override
         public String toString() {
             return ";" + s;
